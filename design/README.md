@@ -1,6 +1,6 @@
 # 《路路捉鬼》设计文档目录（拆分版）
 
-> 版本：**design-v3.2**（v3 拆分基础上增补**指导思想 / 价值立场**：造化劝善、林正英有鬼有人捉、驱鬼者=秩序一侧；不怂恿鲁莽冒险、赞颂舍己救人的勇敢（反犬儒））  
+> 版本：**design-v3.3**（全关卡按**真塔防**重写：贴符=塔；第1关定稿「让人发冷的电梯」；指导思想 / 价值立场保留）  
 > 日期：2026-09-30（CST）  
 > 游戏名 / App：**路路捉鬼** ｜ Slogan：**有祟必达，夜里也不打烊** ｜ AI：**小路**  
 > 现稿对照：`/workspace/didi-ghost/script_v2.md`（保留不删）  
@@ -21,9 +21,9 @@
 1. `/workspace/didi-ghost/design/00_overview.md` — 一句话 / 类型体量 / **指导思想** / 基调 / 主题 / 核心体验  
 2. `/workspace/didi-ghost/design/01_world.md` — 鬼·祟团·阴差·符箓·四种处理（含劝善读法）·平台·临江市·**步道阳气**  
 3. `/workspace/didi-ghost/design/02_characters.md` — 玩家 / 老周 / 小路（反劝善） / 马科长 / **芮姐** / 布丁等  
-4. `/workspace/didi-ghost/design/03_level_order.md` — **24 关 + 序章**总表（含**劝诫钩**列）  
-5. `/workspace/didi-ghost/design/04_gameplay_economy.md` — PvZ 教学 / 四类符 / **教学旁白劝诫规则** / 交互 / 掉落 / 商店  
-6. `/workspace/didi-ghost/design/05_levels/` — 按弧拆分的逐关剧本（每关有热点 + 生活劝诫可出现处）  
+4. `/workspace/didi-ghost/design/03_level_order.md` — **24 关 + 序章**总表（含劝诫钩 + **路径/守护/失败/一大波**）  
+5. `/workspace/didi-ghost/design/04_gameplay_economy.md` — **§4.0 塔防总则** / PvZ 教学 / 四类符 / 劝诫规则 / 交互 / 掉落 / 商店  
+6. `/workspace/didi-ghost/design/05_levels/` — 按弧拆分的逐关塔防剧本（统一模板）  
 7. `/workspace/didi-ghost/design/06_endings.md` — 向善向恶记账与多结局  
 8. `/workspace/didi-ghost/design/07_open_questions.md` — 仍待讨论  
 
@@ -32,7 +32,7 @@
 | 文件 | 覆盖 |
 |---|---|
 | `00_prologue.md` | 序章：注册、创建、护身物 |
-| `01_tutorial.md` | 第 1–6 关：准教学弧（电梯等生活场景） |
+| `01_tutorial.md` | 第 1–6 关：准教学弧（第1「让人发冷的电梯」等） |
 | `02_pudding.md` | 第 7–9 关：布丁弧（**步道初见 → 狗牌 → 女孩卧室梦魇 Boss**） |
 | `03_nannan.md` | 第 10 关：囡囡反套路初登场 |
 | `04_xiaowu.md` | 第 11–12 关：小武线 |
@@ -46,7 +46,7 @@
 
 ## 相对 script_v2 / v3 的结构变化（摘要）
 
-| 项 | v2 | design-v3 | design-v3.2 |
+| 项 | v2 | design-v3 | design-v3.3 |
 |---|---|---|---|
 | 文档形态 | 单文件 ~1200 行 | `design/` 多文件拆分 | 同左 + 指导思想贯穿 |
 | 关数 | 严格 20 关 + 序 | **序章 + 24 关** | 同左 |
@@ -54,6 +54,7 @@
 | 步道阳气 | 无 | 有 + 「晚上别瞎转」 | **写明劝善功能** |
 | 价值立场 | 散落主题 | 主题三条 | **§1.3 指导思想专节** + 各关劝诫钩 |
 | 结局 | A/B/C | 同左 | **向善/向恶记账表**更清晰 |
+| 玩法主轴 | 点消+符 | 混杂 | **贴符塔防**（路径/浓度/一大波） |
 
 ---
 
@@ -70,6 +71,7 @@
 9. ✅ PvZ 式一关教一点对照表  
 10. ✅ 本目录即拆分完成  
 11. ✅ **v3.1** 指导思想写入 `00`；世界/玩法/关卡/结局对齐劝善与秩序一侧  
+12. ✅ **v3.3** 全关卡真塔防重写；第1关电梯定稿；第17前奏电梯复用；失败劝退写进04  
 
 ---
 
@@ -77,12 +79,12 @@
 
 ```
 design/
-├── README.md                 ← 本文件（v3.1）
+├── README.md                 ← 本文件（v3.3）
 ├── 00_overview.md            ← 含「指导思想 / 价值立场」
 ├── 01_world.md
 ├── 02_characters.md
-├── 03_level_order.md         ← 含「劝诫钩」列
-├── 04_gameplay_economy.md    ← 含教学旁白劝诫规则
+├── 03_level_order.md         ← 含劝诫钩 + 塔防四字段
+├── 04_gameplay_economy.md    ← §4.0 塔防总则 + 劝诫规则
 ├── 05_levels/
 │   ├── 00_prologue.md
 │   ├── 01_tutorial.md
