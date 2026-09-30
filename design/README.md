@@ -1,6 +1,6 @@
 # 《路路捉鬼》设计文档目录（拆分版）
 
-> 版本：**design-v3.3**（全关卡按**真塔防**重写：贴符=塔；第1关定稿「让人发冷的电梯」；指导思想 / 价值立场保留）  
+> 版本：**design-v3.4**（**机位约束** + **符能量替阳光**；第1关门下缝/踢符；1–4 单机位、5+ 可多机位；真塔防与指导思想保留）  
 > 日期：2026-09-30（CST）  
 > 游戏名 / App：**路路捉鬼** ｜ Slogan：**有祟必达，夜里也不打烊** ｜ AI：**小路**  
 > 现稿对照：`/workspace/didi-ghost/script_v2.md`（保留不删）  
@@ -21,8 +21,8 @@
 1. `/workspace/didi-ghost/design/00_overview.md` — 一句话 / 类型体量 / **指导思想** / 基调 / 主题 / 核心体验  
 2. `/workspace/didi-ghost/design/01_world.md` — 鬼·祟团·阴差·符箓·四种处理（含劝善读法）·平台·临江市·**步道阳气**  
 3. `/workspace/didi-ghost/design/02_characters.md` — 玩家 / 老周 / 小路（反劝善） / 马科长 / **芮姐** / 布丁等  
-4. `/workspace/didi-ghost/design/03_level_order.md` — **24 关 + 序章**总表（含劝诫钩 + **路径/守护/失败/一大波**）  
-5. `/workspace/didi-ghost/design/04_gameplay_economy.md` — **§4.0 塔防总则** / PvZ 教学 / 四类符 / 劝诫规则 / 交互 / 掉落 / 商店  
+4. `/workspace/didi-ghost/design/03_level_order.md` — **24 关 + 序章**总表（含劝诫钩 + 路径/守护/失败/一大波 + **机位速览**）  
+5. `/workspace/didi-ghost/design/04_gameplay_economy.md` — **§4.0 塔防总则**（机位 / 符能量 / 踢符）/ PvZ 教学 / 四类符 / 劝诫 / 交互 / 掉落 / 商店  
 6. `/workspace/didi-ghost/design/05_levels/` — 按弧拆分的逐关塔防剧本（统一模板）  
 7. `/workspace/didi-ghost/design/06_endings.md` — 向善向恶记账与多结局  
 8. `/workspace/didi-ghost/design/07_open_questions.md` — 仍待讨论  
@@ -55,6 +55,7 @@
 | 价值立场 | 散落主题 | 主题三条 | **§1.3 指导思想专节** + 各关劝诫钩 |
 | 结局 | A/B/C | 同左 | **向善/向恶记账表**更清晰 |
 | 玩法主轴 | 点消+符 | 混杂 | **贴符塔防**（路径/浓度/一大波） |
+| 机位与符力 | — | — | **v3.4** 单/多机位规则；符力替阳光；踢符 |
 
 ---
 
@@ -72,6 +73,7 @@
 10. ✅ 本目录即拆分完成  
 11. ✅ **v3.1** 指导思想写入 `00`；世界/玩法/关卡/结局对齐劝善与秩序一侧  
 12. ✅ **v3.3** 全关卡真塔防重写；第1关电梯定稿；第17前奏电梯复用；失败劝退写进04  
+13. ✅ **v3.4** 机位约束（1–4 单 / 5+ 多）；符能量替阳光；第1关门下缝+踢符；全关补机位  
 
 ---
 
@@ -79,12 +81,12 @@
 
 ```
 design/
-├── README.md                 ← 本文件（v3.3）
+├── README.md                 ← 本文件（v3.4）
 ├── 00_overview.md            ← 含「指导思想 / 价值立场」
 ├── 01_world.md
 ├── 02_characters.md
-├── 03_level_order.md         ← 含劝诫钩 + 塔防四字段
-├── 04_gameplay_economy.md    ← §4.0 塔防总则 + 劝诫规则
+├── 03_level_order.md         ← 含劝诫钩 + 塔防四字段 + 机位速览
+├── 04_gameplay_economy.md    ← §4.0 塔防总则（机位/符能量/踢符）+ 劝诫规则
 ├── 05_levels/
 │   ├── 00_prologue.md
 │   ├── 01_tutorial.md
