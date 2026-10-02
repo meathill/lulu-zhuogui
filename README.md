@@ -1,24 +1,46 @@
 # 《路路捉鬼》设计文档
 
-独立游戏《路路捉鬼》的叙事 / 玩法设计稿（拆分版）。
+独立游戏《路路捉鬼》的叙事 / 玩法全套设计稿（拆分版）。
 
-- 当前版本：**design-v3.6**
-- 游戏名 / App：路路捉鬼
-- Slogan：有祟必达，夜里也不打烊
+- 当前版本：**design-v4.2**
+- 游戏名 / 系统名：**路路捉鬼**（临江市民俗事务服务中心调度系统）
+- Slogan：**有祟必达，夜里也不打烊**（保一方平安）
+- 核心叙事原型：**小地方刑警遇到大案子**（写实、沉闷、沧桑与人间烟火）
+- 灾祸核心成因：**三十年急剧城镇化与经济快速发展导致传统民间信仰循环断裂**（彻底摒弃西式公司商业阴谋论）
+
+## 核心设计法则（v4.2）
+
+1. **叙事质感（警察模式 vs 侦探模式）**：
+   - 侦探是浪漫猎奇的智斗，警察是沉闷枯燥的走访核查。老周与主角每天画符清祟是几十年的日常公差，情绪波动极小、务实沧桑，常态是“差不多就行了，早点弄完早点交班”。
+2. **符箓实战与位置规则**：
+   - **符只能贴在屋内/环境位置上**（门框、门缝、窗台、走廊地面、灶台等固定位点），形成空间结界，对经过的鬼祟生效；
+   - **唯独活人被「附身」时**（如第3关醉汉），显形咒/清心符才允许贴在活人身体上（后颈、额头），逼出阴煞；
+   - **五雷符等攻击符**：不需要往鬼身上硬贴，**选中地面扔下去引天雷**，落地引天火雷光炸碎阴气即可。
+3. **布丁的誓约回响**：
+   - 布丁在第 7 关由老周走公办流程让阴差接引；第 10 关小禾面临梦魇危难时，布丁在奈何桥头不入轮回，挣脱锁魂绳逆冲黄泉返阳救主；小禾兑现诺言：“布丁你放心，我会勇敢起来的！”布丁含笑入轮回。
+4. **创作铁律**：先交代清晰生活背景设定与死因执念，再落笔写台词与任务描述。
 
 ## 阅读顺序
 
-1. [design/README.md](design/README.md) — 目录索引
-2. [design/00_overview.md](design/00_overview.md) — 总览与指导思想
-3. [design/01_world.md](design/01_world.md) — 世界观
-4. [design/02_characters.md](design/02_characters.md) — 角色
-5. [design/03_level_order.md](design/03_level_order.md) — 关卡顺序表
-6. [design/04_gameplay_economy.md](design/04_gameplay_economy.md) — 玩法 / 交互 / 经济
-7. [design/05_levels/](design/05_levels/) — 逐关剧本（按弧）
-8. [design/06_endings.md](design/06_endings.md) — 分支与结局
-9. [design/07_open_questions.md](design/07_open_questions.md) — 待讨论
+1. [design/README.md](design/README.md) — 目录索引与版本日志
+2. [design/00_overview.md](design/00_overview.md) — 总览、指导思想与价值立场
+3. [design/01_world.md](design/01_world.md) — 世界观设定（鬼祟生态、机构性质、城镇化信仰断裂）
+4. [design/02_characters.md](design/02_characters.md) — 故事背景集与角色档案
+5. [design/03_level_order.md](design/03_level_order.md) — 序章+25关机制与叙事骨架总表
+6. [design/04_gameplay_economy.md](design/04_gameplay_economy.md) — 塔防玩法、机位克制、符箓规则与经济
+7. [design/05_levels/](design/05_levels/) — 逐关塔防剧本（按叙事弧分册）
+   - `00_prologue.md`：序章
+   - `01_tutorial.md`：第 1–6 关（准教学弧）
+   - `02_pudding.md`：第 7–10 关（布丁弧，第10首次Boss）
+   - `03_nannan.md`：第 11 关（囡囡初登场）
+   - `04_xiaowu.md`：第 12–13 关（小武线）
+   - `05_guoying.md`：第 16–17 关（桂英线）
+   - `06_midgame.md`：第 14–15、18–20 关（中段主线）
+   - `07_finale.md`：第 21–25 关（终章决战）
+8. [design/06_endings.md](design/06_endings.md) — 分支旗标与多结局判定
+9. [design/07_open_questions.md](design/07_open_questions.md) — 待讨论事项与已关闭决策
 
-对照旧整稿：`script_v2.md`（保留，已被 design/ 拆分版取代为工作主文档）。
+对照旧整稿：`script_v2.md`（保留，已被 `design/` 拆分版全面迭代取代）。
 
 ## 许可
 
