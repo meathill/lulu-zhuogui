@@ -1,7 +1,7 @@
 extends Node3D
 
-## 第 1 关轿厢。摄像头钉在角落，只能原地转头，不能平移，也不能靠拖屏缩放。
-## 竖屏一进来就多看见地面。横屏仍是原来大约 41° 的机位。符位走点击射线。
+## 第 1 关轿厢。摄像头钉在角落，只能原地转头，不能平移，也不能缩放。
+## 在画面里拖动来转向。点一下仍然贴符。竖屏先看见门和地面。
 
 var _world: Node3D
 var _camera: Camera3D
@@ -23,9 +23,9 @@ var _fov := 56.0
 var _steered := false
 var _input_muted := false
 var _framed_key := ""
-var _stick_layer: CanvasLayer
-var _stick: StickPad
-var _stick_label: Label
+var _look_down := false
+var _look_dragged := false
+var _look_from := Vector2.ZERO
 
 const YAW_MIN := -0.30
 const YAW_MAX := 0.48
@@ -34,6 +34,8 @@ const PITCH_MAX := 0.26
 const PORTRAIT_PITCH := -0.10
 const PORTRAIT_FOV := 62.0
 const DESK_FOV := 56.0
+const LOOK_RAD_PER_CSS := 0.0036
+const TAP_CSS := 12.0
 
 
 func setup() -> void:
@@ -64,8 +66,8 @@ func setup() -> void:
 	_base_basis = _camera.basis
 	_camera.current = true
 	_apply_pose()
-	_build_stick()
 	_add_grade()
+	set_process_unhandled_input(true)
 	print("轿厢机位已摆好")
 
 
@@ -102,8 +104,8 @@ func bind() -> void:
 	var phone := _arg_value("--shot-phone")
 	if phone != "":
 		_capture_phone(phone)
-	if OS.get_cmdline_user_args().has("--shot-orbit"):
-		_capture_orbit()
+	if OS.get_cmdline_user_args().has("--shot-drag") or OS.get_cmdline_user_args().has("--shot-orbit"):
+		_capture_drag()
 
 
 func _process(delta: float) -> void:
@@ -114,8 +116,6 @@ func _process(delta: float) -> void:
 	_sync_spirits()
 	_pulse_seams()
 	_refresh_framing()
-	_layout_stick()
-	_apply_stick(delta)
 
 
 func pick(screen_pos: Vector2) -> String:
@@ -507,71 +507,51 @@ func _solid(color: Color) -> StandardMaterial3D:
 	return mat
 
 
-func _build_stick() -> void:
-	_stick_layer = CanvasLayer.new()
-	_stick_layer.layer = 4
-	_stick_layer.name = "TurnStick"
-	get_parent().add_child(_stick_layer)
-	var root := Control.new()
-	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.offset_right = 0
-	root.offset_bottom = 0
-	_stick_layer.add_child(root)
-	_stick_label = Label.new()
-	_stick_label.text = "转向"
-	_stick_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_stick_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_stick_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_stick_label.add_theme_font_override("font", UiTheme.font())
-	_stick_label.add_theme_color_override("font_color", Color(0.93, 0.9, 0.78))
-	root.add_child(_stick_label)
-	_stick = StickPad.new()
-	_stick.name = "Pad"
-	root.add_child(_stick)
-
-
-func _layout_stick() -> void:
-	if _stick == null or _stick_label == null:
+func _unhandled_input(event: InputEvent) -> void:
+	if _input_muted or _camera == null:
 		return
-	var root := _stick.get_parent() as Control
+	if event is InputEventMagnifyGesture or event is InputEventPanGesture:
+		get_viewport().set_input_as_handled()
+		return
+	if event is InputEventMouseButton:
+		var mouse := event as InputEventMouseButton
+		if mouse.button_index == MOUSE_BUTTON_WHEEL_UP or mouse.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			get_viewport().set_input_as_handled()
+			return
+		if mouse.button_index != MOUSE_BUTTON_LEFT:
+			return
+		if mouse.pressed:
+			_look_down = true
+			_look_dragged = false
+			_look_from = mouse.position
+		else:
+			if _look_down and not _look_dragged:
+				var host := get_parent()
+				if host != null and host.has_method("_pick_cabin"):
+					host.call("_pick_cabin", mouse.position)
+			_look_down = false
+			_look_dragged = false
+		get_viewport().set_input_as_handled()
+		return
+	if event is InputEventMouseMotion and _look_down:
+		var motion := event as InputEventMouseMotion
+		if motion.position.distance_to(_look_from) < _tap_logical():
+			return
+		_look_dragged = true
+		_steered = true
+		var step := motion.relative / _logical_per_css()
+		# 往右拖，视线往右。往下拖，多看见地面。位置钉死。
+		_nudge(-step.x * LOOK_RAD_PER_CSS, -step.y * LOOK_RAD_PER_CSS * 0.85)
+		get_viewport().set_input_as_handled()
+
+
+func _logical_per_css() -> float:
 	var vis := get_viewport().get_visible_rect().size
-	root.position = Vector2.ZERO
-	root.size = vis
-	var slot := Rect2(vis.x * 0.70, vis.y * 0.72, vis.x * 0.26, vis.y * 0.08)
-	var hud: Variant = get_parent().get("hud")
-	if hud != null and hud.has_method("stick_slot"):
-		slot = hud.call("stick_slot")
-	var side := minf(slot.size.y, slot.size.x)
-	if side < 8.0:
-		return
-	_stick.size = Vector2(side, side)
-	_stick.position = Vector2(slot.position.x + slot.size.x - side, slot.position.y + (slot.size.y - side) * 0.5)
-	var label_w := maxf(0.0, _stick.position.x - slot.position.x - 6.0)
-	_stick_label.visible = label_w > side * 0.45
-	_stick_label.position = Vector2(slot.position.x, slot.position.y)
-	_stick_label.size = Vector2(label_w, slot.size.y)
-	var upp := 1.0
-	var win := DisplayServer.window_get_size()
-	if win.x > 1 and vis.x > 1.0:
-		upp = maxf(vis.x / float(win.x), vis.y / float(win.y))
-	_stick_label.add_theme_font_size_override("font_size", int(maxf(16.0, 15.0 * upp)))
-	if not _stick_label.visible:
-		_stick_label.visible = true
-		_stick_label.position = Vector2(_stick.position.x, _stick.position.y + side - 22.0 * upp)
-		_stick_label.size = Vector2(side, 20.0 * upp)
-		_stick_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	return UiTheme.units_per_css(vis)
 
 
-func _apply_stick(delta: float) -> void:
-	if _input_muted or _stick == null:
-		return
-	var dir: Vector2 = _stick.dir
-	if dir.length() < 0.18:
-		return
-	_steered = true
-	# 摇杆向右，视线向右。摇杆向下，多看见地面。
-	_nudge(-dir.x * 0.9 * delta, -dir.y * 0.72 * delta)
+func _tap_logical() -> float:
+	return TAP_CSS * _logical_per_css()
 
 
 func _is_portrait() -> bool:
@@ -733,60 +713,65 @@ func _sweep(which: String) -> Vector2:
 	return Vector2(lo, hi)
 
 
-func _capture_orbit() -> void:
-	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
-	DisplayServer.window_set_size(Vector2i(390, 844))
-	get_window().size = Vector2i(390, 844)
-	for _i in 30:
-		await get_tree().process_frame
-	_framed_key = ""
-	_steered = false
-	_refresh_framing()
-	_layout_stick()
+func _capture_drag() -> void:
+	_input_muted = true
+	await _frame_window(Vector2i(390, 844), false)
+	_ui_probe("portrait")
+	var home_seam := _camera.unproject_position(Vector3(0.0, 0.55, -1.16))
+	print("HOME pick %s at %s mount %s" % [pick(home_seam), home_seam, _camera.position])
+	await RenderingServer.frame_post_draw
+	_save_shot("/workspace/lulu-zhuogui/apps/game/build/shots/drag-portrait.png")
+	_steered = true
+	# 大约往右下拖 90×50 CSS 像素，走和手指一样的 _nudge。
+	_nudge(-90.0 * LOOK_RAD_PER_CSS, -50.0 * LOOK_RAD_PER_CSS * 0.85)
 	for _i in 6:
 		await get_tree().process_frame
-	var vis := get_viewport().get_visible_rect()
-	print("SPACE vp %s vis %s win %s fov %.1f pitch %.2f home_ok %s" % [
-		get_viewport().size, vis, DisplayServer.window_get_size(), _fov, rad_to_deg(_pitch), _pose_ok(_yaw, _pitch)
+	print("DRAG yaw %.2f pitch %.2f pos %s ok %s" % [
+		rad_to_deg(_yaw), rad_to_deg(_pitch), _camera.position, _pose_ok(_yaw, _pitch)
 	])
-	_apply_pose()
-	var home_seam := _camera.unproject_position(Vector3(0.0, 0.55, -1.16))
-	print("HOME pick %s at %s" % [pick(home_seam), home_seam])
 	await RenderingServer.frame_post_draw
-	_save_shot("/workspace/lulu-zhuogui/apps/game/build/shots/orbit-start.png")
-	_steered = true
-	_input_muted = true
-	if _stick != null:
-		_stick.dir = Vector2(0.62, 0.55)
-		_stick.queue_redraw()
-	_nudge(-0.08, -0.05)
-	for _i in 4:
-		await get_tree().process_frame
-	print("STICK yaw %.2f pitch %.2f" % [rad_to_deg(_yaw), rad_to_deg(_pitch)])
+	_save_shot("/workspace/lulu-zhuogui/apps/game/build/shots/drag-after.png")
+	await _frame_window(Vector2i(1280, 720), false)
+	_ui_probe("desktop")
+	print("DESK yaw %.2f pitch %.2f fov %.1f ok %s" % [
+		rad_to_deg(_yaw), rad_to_deg(_pitch), _fov, _pose_ok(_yaw, _pitch)
+	])
 	await RenderingServer.frame_post_draw
-	_save_shot("/workspace/lulu-zhuogui/apps/game/build/shots/orbit-stick.png")
-	if _stick != null:
-		_stick.dir = Vector2.ZERO
-		_stick.queue_redraw()
-	var y := _yaw
-	var p := _pitch
-	while p - 0.02 >= PITCH_MIN and _pose_ok(y, p - 0.02):
-		p -= 0.02
-	while y - 0.02 >= YAW_MIN and _pose_ok(y - 0.02, p):
-		y -= 0.02
-	_yaw = y
-	_pitch = p
-	_apply_pose()
-	var past := _pose_ok(y - 0.02, p) or _pose_ok(y, p - 0.02)
-	print("LIMIT yaw %.2f pitch %.2f past %s ok %s" % [rad_to_deg(_yaw), rad_to_deg(_pitch), past, _pose_ok(_yaw, _pitch)])
-	for _i in 4:
-		await get_tree().process_frame
-	await RenderingServer.frame_post_draw
-	_save_shot("/workspace/lulu-zhuogui/apps/game/build/shots/orbit-limit.png")
-	var seam := Vector3(0.0, 0.7, -1.16)
-	var sp := _camera.unproject_position(seam)
-	print("PICK %s at %s" % [pick(sp), sp])
+	_save_shot("/workspace/lulu-zhuogui/apps/game/build/shots/drag-desktop.png")
 	get_tree().quit(0)
+
+
+func _frame_window(size: Vector2i, keep_steer: bool) -> void:
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	DisplayServer.window_set_size(size)
+	get_window().size = size
+	for _i in 24:
+		await get_tree().process_frame
+	if not keep_steer:
+		_steered = false
+	_framed_key = ""
+	_refresh_framing()
+	for _i in 8:
+		await get_tree().process_frame
+
+
+func _ui_probe(tag: String) -> void:
+	var vis := get_viewport().get_visible_rect().size
+	var css := UiTheme.css_size()
+	var upc := UiTheme.units_per_css(vis)
+	var font_css := -1
+	var btn_css := -1.0
+	var hud: Node = get_parent().get("hud")
+	if hud != null:
+		var dialogue := hud.get("_dialogue") as Label
+		if dialogue != null:
+			font_css = int(round(float(dialogue.get_theme_font_size("font_size")) / upc))
+		var talk := hud.get("_talk") as Button
+		if talk != null:
+			btn_css = talk.size.y / upc
+	print("UI %s win %s css %s dpr %.2f vis %s upc %.2f font_css %s btn_css %.1f" % [
+		tag, DisplayServer.window_get_size(), css, UiTheme.pixel_ratio(), vis, upc, font_css, btn_css
+	])
 
 
 func _ray_aabb(origin: Vector3, dir: Vector3, box: AABB) -> float:
@@ -816,45 +801,3 @@ func _ray_aabb(origin: Vector3, dir: Vector3, box: AABB) -> float:
 	if tmax < 0.0:
 		return -1.0
 	return tmin
-
-class StickPad extends Control:
-	var dir := Vector2.ZERO
-	var _held := false
-
-	func _ready() -> void:
-		mouse_filter = Control.MOUSE_FILTER_STOP
-
-	func _gui_input(event: InputEvent) -> void:
-		if event is InputEventMouseButton:
-			var mouse := event as InputEventMouseButton
-			if mouse.button_index != MOUSE_BUTTON_LEFT:
-				return
-			_held = mouse.pressed
-			if mouse.pressed:
-				_from(mouse.position)
-			else:
-				dir = Vector2.ZERO
-				queue_redraw()
-			accept_event()
-		elif event is InputEventMouseMotion and _held:
-			_from((event as InputEventMouseMotion).position)
-			accept_event()
-
-	func _from(point: Vector2) -> void:
-		var center := size * 0.5
-		var radius := minf(size.x, size.y) * 0.42
-		if radius < 1.0:
-			return
-		var offset := point - center
-		if offset.length() > radius:
-			offset = offset.normalized() * radius
-		dir = offset / radius
-		queue_redraw()
-
-	func _draw() -> void:
-		var center := size * 0.5
-		var radius := minf(size.x, size.y) * 0.5
-		draw_circle(center, radius * 0.96, Color(0.04, 0.045, 0.05, 0.82))
-		draw_arc(center, radius * 0.9, 0.0, TAU, 36, Color(0.8, 0.76, 0.64, 0.95), maxf(2.0, radius * 0.07))
-		var knob := center + dir * radius * 0.4
-		draw_circle(knob, radius * 0.32, Color(0.92, 0.88, 0.74, 0.98))

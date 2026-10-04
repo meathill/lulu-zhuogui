@@ -26,3 +26,29 @@ static func make() -> Theme:
 	theme.default_font = face
 	theme.default_font_size = 22
 	return theme
+
+
+static func pixel_ratio() -> float:
+	# 网页上这是 devicePixelRatio。关掉高分屏时是 1。
+	var ratio := DisplayServer.screen_get_scale()
+	if ratio < 0.5 or ratio > 8.0:
+		return 1.0
+	return ratio
+
+
+static func css_size() -> Vector2:
+	var win := Vector2(DisplayServer.window_get_size())
+	var css := win / pixel_ratio()
+	if css.x < 2.0 or css.y < 2.0:
+		return Vector2(1280, 720)
+	return css
+
+
+static func units_per_css(vis: Vector2) -> float:
+	# 逻辑像素 / CSS 像素。1920 宽的画布缩到 390 CSS 宽时，大约是 4.9。
+	# 不要用窗口的设备像素去除，否则手机上字会缩成发丝。
+	var css := css_size()
+	if vis.x < 2.0 or vis.y < 2.0:
+		return 1.0
+	return maxf(vis.x / css.x, vis.y / css.y)
+

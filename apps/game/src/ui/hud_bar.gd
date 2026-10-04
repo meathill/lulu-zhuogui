@@ -191,30 +191,20 @@ func _visible_size() -> Vector2:
 	return vis
 
 
-func _units_per_px(vis: Vector2) -> float:
-	var win := DisplayServer.window_get_size()
-	if win.x <= 1 or win.y <= 1 or vis.x <= 1.0 or vis.y <= 1.0:
-		return 1.0
-	return maxf(vis.x / float(win.x), vis.y / float(win.y))
-
-
 func _relayout() -> void:
 	if not _wired or _root == null:
 		return
 	var vis := _visible_size()
-	var upp := _units_per_px(vis)
+	# 字号按 CSS 像素。390 宽的窗口上正文约 18、按钮约 48，桌面同一套不会被放大到铺满。
+	var upc := UiTheme.units_per_css(vis)
 	var portrait := vis.y > vis.x
-	var min_btn := maxf(48.0, 48.0 * upp)
-	var margin := clampf(10.0 * upp, 12.0, vis.x * 0.06)
-	var gap := clampf(8.0 * upp, 8.0, 24.0)
-	var font_title := int(maxf(26.0, 18.0 * upp))
-	var font_body := int(maxf(20.0, 15.0 * upp))
-	var font_small := int(maxf(18.0, 13.0 * upp))
-	# 窄或矮时字再大一号，拇指和眼睛都够得到。
-	var cramped := portrait or vis.x < 1100.0 or vis.y < 900.0
-	if cramped:
-		font_body = int(maxf(font_body, 16.0 * upp))
-		font_title = int(maxf(font_title, 18.0 * upp))
+	var min_btn := 48.0 * upc
+	var margin := 10.0 * upc
+	var gap := 8.0 * upc
+	var font_title := int(round(22.0 * upc))
+	var font_body := int(round(18.0 * upc))
+	var font_small := int(round(16.0 * upc))
+	var cramped := portrait or vis.x < 1100.0 * upc or vis.y < 900.0
 	_root.position = Vector2.ZERO
 	_root.size = vis
 	_style(_title, font_title)
@@ -229,7 +219,7 @@ func _relayout() -> void:
 	if portrait:
 		_layout_top_portrait(vis, margin, font_title, font_small)
 	else:
-		_layout_top_wide(vis, margin, gap, upp, font_title, font_body, font_small)
+		_layout_top_wide(vis, margin, gap, upc, font_title, font_body, font_small)
 	_layout_bottom(vis, margin, gap, min_btn, font_body, cramped)
 	_layout_end(vis, margin, gap, min_btn, font_body)
 
@@ -257,7 +247,7 @@ func _layout_top_portrait(vis: Vector2, margin: float, font_title: int, font_sma
 	_clock.size = Vector2(vis.x - margin * 2.0, line2)
 
 
-func _layout_top_wide(vis: Vector2, margin: float, _gap: float, upp: float, font_title: int, font_body: int, font_small: int) -> void:
+func _layout_top_wide(vis: Vector2, margin: float, _gap: float, upc: float, font_title: int, font_body: int, font_small: int) -> void:
 	_goal.visible = true
 	_meters.visible = true
 	_status.visible = true
@@ -298,7 +288,7 @@ func _layout_top_wide(vis: Vector2, margin: float, _gap: float, upp: float, font
 	_meters.position = Vector2(margin, y)
 	_meters.size = Vector2(vis.x - margin * 2.0, row)
 	y += row
-	var zhou_w := minf(vis.x * 0.42, maxf(220.0, 280.0 * upp))
+	var zhou_w := minf(vis.x * 0.42, maxf(220.0 * upc, 280.0 * upc))
 	var split := vis.x > 1400.0
 	_energy.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_energy.clip_text = true
@@ -331,13 +321,13 @@ func _layout_top_wide(vis: Vector2, margin: float, _gap: float, upp: float, font
 
 
 func _layout_bottom(vis: Vector2, margin: float, gap: float, min_btn: float, font_body: int, cramped: bool) -> void:
-	var font_btn := int(clampf(float(font_body), 16.0, min_btn * 0.42))
+	var font_btn := int(minf(float(font_body), min_btn * 0.42))
 	var max_w := vis.x - margin * 2.0
 	var cursor_x := margin
 	var row_y := margin * 0.35
 	var portrait := vis.y > vis.x
 	if portrait:
-		var stat_h := min_btn
+		var stat_h := float(_meters.get_theme_font_size("font_size")) * 1.9
 		_meters.visible = true
 		_meters.autowrap_mode = TextServer.AUTOWRAP_OFF
 		_meters.clip_text = true
@@ -391,8 +381,9 @@ func _layout_bottom(vis: Vector2, margin: float, gap: float, min_btn: float, fon
 			_dialogue.position = Vector2(left, margin * 0.4)
 			_dialogue.size = Vector2(vis.x - margin - left, maxf(min_btn, dialogue_h))
 	if portrait:
-		# 字体 get_height 偏大，按字号留三行，老周两句都进得来。
-		_dialogue.size.y = float(font_body) * 2.15 * 3.0
+		# 两句口播大约三行。按字号留，不再乘一截偏大的 get_height。
+		# 第一句会折成三行，第二句再占一行。
+		_dialogue.size.y = maxf(line_h * 4.5, float(font_body) * 6.8)
 	var content_bottom := maxf(buttons_bottom, _dialogue.position.y + _dialogue.size.y)
 	var bottom_h := content_bottom + margin * 0.4
 	if not portrait:
@@ -410,7 +401,7 @@ func _layout_bottom(vis: Vector2, margin: float, gap: float, min_btn: float, fon
 
 func _layout_end(vis: Vector2, margin: float, gap: float, min_btn: float, font_body: int) -> void:
 	var box_w := minf(maxf(520.0, vis.x * 0.72), vis.x - margin * 2.0)
-	var font_btn := int(clampf(float(font_body), 16.0, min_btn * 0.46))
+	var font_btn := int(minf(float(font_body), min_btn * 0.46))
 	_retry.add_theme_font_size_override("font_size", font_btn)
 	_back.add_theme_font_size_override("font_size", font_btn)
 	var retry_w := maxf(min_btn * 2.2, _text_width_button(_retry, font_btn) + min_btn * 0.4)
@@ -439,34 +430,6 @@ func _layout_end(vis: Vector2, margin: float, gap: float, min_btn: float, font_b
 		_back.position = Vector2(margin, by + min_btn + gap)
 		_back.size = Vector2(bw, min_btn)
 
-
-
-func stick_slot() -> Rect2:
-	# 摇杆落在底栏里、三个操作钮的右侧。盖不住门，也不改按钮的位置。
-	if _bottom == null or _bottom_buttons.is_empty():
-		var vis := _visible_size()
-		return Rect2(vis.x * 0.70, vis.y * 0.70, vis.x * 0.26, vis.y * 0.10)
-	var right := 0.0
-	var top := 100000.0
-	var bottom := 0.0
-	for button in _bottom_buttons:
-		right = maxf(right, button.position.x + button.size.x)
-		top = minf(top, button.position.y)
-		bottom = maxf(bottom, button.position.y + button.size.y)
-	var y := _bottom.position.y + top
-	var h := bottom - top
-	var dialogue_y := _bottom.position.y + _dialogue.position.y
-	if _dialogue.position.y > top + 4.0:
-		h = minf(h, maxf(8.0, dialogue_y - y - 4.0))
-	var x := _bottom.position.x + right + 10.0
-	var w := _bottom.position.x + _bottom.size.x - 8.0 - x
-	if w < h * 0.85:
-		var side := minf(h * 1.15, _bottom.size.x * 0.22)
-		var bx := _bottom.position.x + _bottom.size.x - side - 8.0
-		var by := _bottom.position.y + 6.0
-		var bh := minf(side, maxf(8.0, dialogue_y - by - 4.0))
-		return Rect2(bx, by, side, bh)
-	return Rect2(x, y, w, maxf(8.0, h))
 
 
 func _attach(node: Node, parent: Node) -> void:
@@ -510,6 +473,6 @@ func _label(parent: Node, text: String, size: int) -> Label:
 func _button(parent: Node, text: String) -> Button:
 	var button := Button.new()
 	button.text = text
-	button.custom_minimum_size = Vector2(48, 48)
+	button.custom_minimum_size = Vector2(44, 44)
 	parent.add_child(button)
 	return button

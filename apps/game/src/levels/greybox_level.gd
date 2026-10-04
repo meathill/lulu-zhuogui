@@ -36,7 +36,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	var mouse := event as InputEventMouseButton
 	if not mouse.pressed or mouse.button_index != MOUSE_BUTTON_LEFT:
 		return
-	if _pick_cabin(mouse.position):
+	# 第 1 关由轿厢区分拖动和点按，松手才贴符。
+	if get_node_or_null("ElevatorView") != null:
 		return
 	_click(get_global_mouse_position())
 

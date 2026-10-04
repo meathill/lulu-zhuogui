@@ -73,15 +73,12 @@ func _relayout() -> void:
 	var vis := get_viewport().get_visible_rect().size
 	if vis.x < 2.0 or vis.y < 2.0:
 		vis = Vector2(1280, 720)
-	var upp := 1.0
-	var win := DisplayServer.window_get_size()
-	if win.x > 1 and win.y > 1:
-		upp = maxf(vis.x / float(win.x), vis.y / float(win.y))
-	var margin := clampf(12.0 * upp, 16.0, vis.x * 0.08)
-	var min_btn := maxf(48.0, 48.0 * upp)
-	var font_title := int(maxf(36.0, 22.0 * upp))
-	var font_body := int(maxf(20.0, 15.0 * upp))
-	var font_btn := int(clampf(float(font_body), 16.0, min_btn * 0.42))
+	var upc := UiTheme.units_per_css(vis)
+	var margin := 12.0 * upc
+	var min_btn := 48.0 * upc
+	var font_title := int(round(28.0 * upc))
+	var font_body := int(round(16.0 * upc))
+	var font_btn := int(round(16.0 * upc))
 	_title.add_theme_font_size_override("font_size", font_title)
 	_title.add_theme_font_override("font", UiTheme.font())
 	_sub.add_theme_font_size_override("font_size", font_body)
