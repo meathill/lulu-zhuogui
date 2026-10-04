@@ -1,0 +1,22 @@
+{
+  "id": "level-01",
+  "title": "让人发冷的电梯",
+  "regenRate": 12,
+  "placeCost": 35,
+  "wardDamagePerSecond": 30,
+  "failThreshold": 3,
+  "initialEnergy": 40,
+  "energyMax": 100,
+  "hotspots": [
+    {
+      "id": "door-bottom-seam",
+      "label": "门下缝"
+    }
+  ],
+  "spirit": {
+    "id": "thick-slag",
+    "maxHp": 90,
+    "moveDurationSec": 6,
+    "entryHotspotId": "door-bottom-seam"
+  }
+}
