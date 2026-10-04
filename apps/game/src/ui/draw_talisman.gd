@@ -35,7 +35,7 @@ const PATTERN: Array[Vector2] = [
 	Vector2(0.72, 0.78),
 ]
 
-const MEMORIZE_SEC := 1.5
+const MEMORIZE_SEC := 3.0
 const HIT_CSS := 56.0
 const DOT_CSS := 40.0
 
@@ -100,6 +100,10 @@ func close() -> void:
 func _enter_connect() -> void:
 	_phase = "connect"
 	_hint.text = "老周：按刚才的顺序，一笔连完。连错了没事，再来。"
+	for d in _dots:
+		var num := d.get_node_or_null("Num") as CanvasItem
+		if num != null:
+			num.visible = false
 	_ink.queue_redraw()
 
 
