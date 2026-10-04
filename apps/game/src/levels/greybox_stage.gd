@@ -74,8 +74,7 @@ func _build_hud(data: Dictionary) -> void:
 	add_child(hud)
 	hud.build(str(data.get("title", "")), str(data.get("goal", "")), _strings(data.get("tools", [])), camera_mode == "multi")
 	hud.tool_selected.connect(func(tool_id: String) -> void:
-		current_tool = tool_id
-		_coach_call("on_tool", [tool_id])
+		_on_tool_selected(tool_id)
 	)
 	hud.energy_pressed.connect(func() -> void: _coach_call("on_energy", []))
 	hud.summon_pressed.connect(func() -> void: call("try_summon"))
@@ -293,3 +292,58 @@ func _assist(delta: float) -> void:
 				_resolve(actor)
 
 
+var _ward_draw: Node = null
+
+
+func _on_tool_selected(tool_id: String) -> void:
+	if tool_id == "ward" and level_id == "level-01" and auto_mode == "":
+		_open_ward_draw()
+		return
+	current_tool = tool_id
+	_coach_call("on_tool", [tool_id])
+
+
+func _open_ward_draw() -> void:
+	if _ward_draw != null and bool(_ward_draw.call("is_open")):
+		return
+	if _ward_draw == null:
+		_ward_draw = load("res://src/ui/draw_talisman.gd").new()
+		_ward_draw.name = "WardDraw"
+		add_child(_ward_draw)
+		_ward_draw.connect("completed", _on_ward_draw_done)
+		_ward_draw.connect("cancelled", _on_ward_draw_cancel)
+	var view := get_node_or_null("ElevatorView")
+	if view != null and view.has_method("set_look_muted"):
+		view.call("set_look_muted", true)
+	_ward_draw.call("open")
+
+
+func open_ward_draw_shot(mode: String) -> void:
+	if _ward_draw == null:
+		_ward_draw = load("res://src/ui/draw_talisman.gd").new()
+		_ward_draw.name = "WardDraw"
+		add_child(_ward_draw)
+	var view := get_node_or_null("ElevatorView")
+	if view != null and view.has_method("set_look_muted"):
+		view.call("set_look_muted", true)
+	_ward_draw.call("open_for_shot", mode)
+
+
+func _on_ward_draw_done() -> void:
+	current_tool = "ward"
+	var view := get_node_or_null("ElevatorView")
+	if view != null and view.has_method("set_look_muted"):
+		view.call("set_look_muted", false)
+	_coach_call("on_tool", ["ward"])
+	status_text = "符画好了。点缝就能贴上去。"
+	_refresh()
+
+
+func _on_ward_draw_cancel() -> void:
+	if coach != null:
+		current_tool = ""
+	var view := get_node_or_null("ElevatorView")
+	if view != null and view.has_method("set_look_muted"):
+		view.call("set_look_muted", false)
+	status_text = "先不画了。要贴再点镇守。"
+	_refresh()

@@ -106,6 +106,9 @@ func bind() -> void:
 		_capture_phone(phone)
 	if OS.get_cmdline_user_args().has("--shot-drag") or OS.get_cmdline_user_args().has("--shot-orbit"):
 		_capture_drag()
+	var draw_shot := _arg_value("--shot-draw")
+	if draw_shot != "":
+		_capture_draw(draw_shot)
 
 
 func _process(delta: float) -> void:
@@ -540,8 +543,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_look_dragged = true
 		_steered = true
 		var step := motion.relative / _logical_per_css()
-		# 往右拖，视线往右。往下拖，多看见地面。位置钉死。
-		_nudge(-step.x * LOOK_RAD_PER_CSS, -step.y * LOOK_RAD_PER_CSS * 0.85)
+		# 抓世界：往左拖，画面跟着手指往左，镜头朝右。往下拖，多看见地面。位置钉死。
+		_nudge(step.x * LOOK_RAD_PER_CSS, -step.y * LOOK_RAD_PER_CSS * 0.85)
 		get_viewport().set_input_as_handled()
 
 
@@ -713,6 +716,32 @@ func _sweep(which: String) -> Vector2:
 	return Vector2(lo, hi)
 
 
+func set_look_muted(muted: bool) -> void:
+	_input_muted = muted
+	if muted:
+		_look_down = false
+		_look_dragged = false
+
+
+func _capture_draw(mode: String) -> void:
+	_input_muted = true
+	await _frame_window(Vector2i(390, 844), false)
+	for _i in 40:
+		await get_tree().process_frame
+		var hud: Variant = get_parent().get("hud")
+		if hud != null:
+			break
+	var host := get_parent()
+	if host != null and host.has_method("open_ward_draw_shot"):
+		host.call("open_ward_draw_shot", mode)
+	for _i in 20:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	var path := "/workspace/lulu-zhuogui/apps/game/build/shots/draw-%s.png" % mode
+	_save_shot(path)
+	get_tree().quit(0)
+
+
 func _capture_drag() -> void:
 	_input_muted = true
 	await _frame_window(Vector2i(390, 844), false)
@@ -722,15 +751,17 @@ func _capture_drag() -> void:
 	await RenderingServer.frame_post_draw
 	_save_shot("/workspace/lulu-zhuogui/apps/game/build/shots/drag-portrait.png")
 	_steered = true
-	# 大约往右下拖 90×50 CSS 像素，走和手指一样的 _nudge。
-	_nudge(-90.0 * LOOK_RAD_PER_CSS, -50.0 * LOOK_RAD_PER_CSS * 0.85)
+	var yaw0 := _yaw
+	# 往左拖约 90 CSS 像素：世界往左走，镜头朝右（yaw 变负）。
+	_nudge(-90.0 * LOOK_RAD_PER_CSS, 0.0)
 	for _i in 6:
 		await get_tree().process_frame
-	print("DRAG yaw %.2f pitch %.2f pos %s ok %s" % [
-		rad_to_deg(_yaw), rad_to_deg(_pitch), _camera.position, _pose_ok(_yaw, _pitch)
+	var dyaw := _yaw - yaw0
+	print("DRAG-INVERT yaw0 %.4f yaw %.4f dyaw %.4f deg %.2f pitch %.2f pos %s ok %s" % [
+		yaw0, _yaw, dyaw, rad_to_deg(dyaw), rad_to_deg(_pitch), _camera.position, _pose_ok(_yaw, _pitch)
 	])
 	await RenderingServer.frame_post_draw
-	_save_shot("/workspace/lulu-zhuogui/apps/game/build/shots/drag-after.png")
+	_save_shot("/workspace/lulu-zhuogui/apps/game/build/shots/drag-invert.png")
 	await _frame_window(Vector2i(1280, 720), false)
 	_ui_probe("desktop")
 	print("DESK yaw %.2f pitch %.2f fov %.1f ok %s" % [
