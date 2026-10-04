@@ -1,7 +1,7 @@
 extends Node3D
 
-## 第 1 关轿厢。天花板角落的监控，大约 45° 俯视对着门。
-## 符位仍走灰盒的 slot id，这里只负责看得见的三维和点击射线。
+## 第 1 关轿厢。摄像头钉在角落，只能原地转头，不能平移，也不能靠拖屏缩放。
+## 竖屏一进来就多看见地面。横屏仍是原来大约 41° 的机位。符位走点击射线。
 
 var _world: Node3D
 var _camera: Camera3D
@@ -13,6 +13,27 @@ var _shot: bool = false
 var _grade: ColorRect
 var _seam_mesh: Dictionary = {}
 var _seam_color: Dictionary = {}
+var _solids: Array[AABB] = []
+var _shaft: Array[AABB] = []
+var _mount := Vector3(0.38, 1.92, 0.48)
+var _base_basis := Basis.IDENTITY
+var _yaw := 0.0
+var _pitch := 0.0
+var _fov := 56.0
+var _steered := false
+var _input_muted := false
+var _framed_key := ""
+var _stick_layer: CanvasLayer
+var _stick: StickPad
+var _stick_label: Label
+
+const YAW_MIN := -0.30
+const YAW_MAX := 0.48
+const PITCH_MIN := -0.34
+const PITCH_MAX := 0.26
+const PORTRAIT_PITCH := -0.10
+const PORTRAIT_FOV := 62.0
+const DESK_FOV := 56.0
 
 
 func setup() -> void:
@@ -33,13 +54,17 @@ func setup() -> void:
 
 	_camera = Camera3D.new()
 	_camera.name = "Camera"
-	_camera.fov = 56.0
+	_camera.fov = _fov
 	_camera.near = 0.04
 	_camera.far = 30.0
 	_world.add_child(_camera)
-	# 后右上角，看向门下沿。水平距离和落差接近，俯角约 45°。
-	_camera.look_at_from_position(Vector3(0.38, 1.92, 0.48), Vector3(-0.02, 0.55, -1.05), Vector3.UP)
+	# 后右上角钉死。起始仍看向门下沿，俯角约 41°。之后只改朝向和视角。
+	_camera.look_at_from_position(_mount, Vector3(-0.02, 0.55, -1.05), Vector3.UP)
+	_mount = _camera.position
+	_base_basis = _camera.basis
 	_camera.current = true
+	_apply_pose()
+	_build_stick()
 	_add_grade()
 	print("轿厢机位已摆好")
 
@@ -77,15 +102,20 @@ func bind() -> void:
 	var phone := _arg_value("--shot-phone")
 	if phone != "":
 		_capture_phone(phone)
+	if OS.get_cmdline_user_args().has("--shot-orbit"):
+		_capture_orbit()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	_fit_grade()
 	if not _bound or _camera == null:
 		return
 	_sync_slots()
 	_sync_spirits()
 	_pulse_seams()
+	_refresh_framing()
+	_layout_stick()
+	_apply_stick(delta)
 
 
 func pick(screen_pos: Vector2) -> String:
@@ -130,8 +160,8 @@ func _build_shell() -> void:
 
 
 func _build_doors() -> void:
-	# 门后的暗井，缝和门缝都透出这块黑。
-	_box(Vector3(0, 1.02, -1.48), Vector3(1.20, 2.10, 0.36), Color(0.015, 0.016, 0.018))
+	# 门后的暗井。射线把它当成门外，镜头不能转到只看见这口井。
+	_box(Vector3(0, 1.08, -1.46), Vector3(1.40, 2.24, 0.58), Color(0.015, 0.016, 0.018), true)
 	var door := Color(0.64, 0.66, 0.64)
 	var inset := Color(0.50, 0.53, 0.51)
 	# 两扇门悬在地面以上，底下留一条能看见的黑缝。
@@ -439,7 +469,7 @@ func _save_shot(path: String) -> void:
 	print("SHOT save %s %s %sx%s" % [path, err, image.get_width(), image.get_height()])
 
 
-func _box(pos: Vector3, size: Vector3, color: Color) -> MeshInstance3D:
+func _box(pos: Vector3, size: Vector3, color: Color, shaft: bool = false) -> MeshInstance3D:
 	var mesh_node := MeshInstance3D.new()
 	var mesh := BoxMesh.new()
 	mesh.size = size
@@ -447,6 +477,11 @@ func _box(pos: Vector3, size: Vector3, color: Color) -> MeshInstance3D:
 	mesh_node.position = pos
 	mesh_node.material_override = _solid(color)
 	_world.add_child(mesh_node)
+	var aabb := AABB(pos - size * 0.5, size)
+	if shaft:
+		_shaft.append(aabb)
+	else:
+		_solids.append(aabb)
 	return mesh_node
 
 
@@ -470,6 +505,288 @@ func _solid(color: Color) -> StandardMaterial3D:
 	mat.albedo_color = color
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	return mat
+
+
+func _build_stick() -> void:
+	_stick_layer = CanvasLayer.new()
+	_stick_layer.layer = 4
+	_stick_layer.name = "TurnStick"
+	get_parent().add_child(_stick_layer)
+	var root := Control.new()
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.offset_right = 0
+	root.offset_bottom = 0
+	_stick_layer.add_child(root)
+	_stick_label = Label.new()
+	_stick_label.text = "转向"
+	_stick_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_stick_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_stick_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_stick_label.add_theme_font_override("font", UiTheme.font())
+	_stick_label.add_theme_color_override("font_color", Color(0.93, 0.9, 0.78))
+	root.add_child(_stick_label)
+	_stick = StickPad.new()
+	_stick.name = "Pad"
+	root.add_child(_stick)
+
+
+func _layout_stick() -> void:
+	if _stick == null or _stick_label == null:
+		return
+	var root := _stick.get_parent() as Control
+	var vis := get_viewport().get_visible_rect().size
+	root.position = Vector2.ZERO
+	root.size = vis
+	var slot := Rect2(vis.x * 0.70, vis.y * 0.72, vis.x * 0.26, vis.y * 0.08)
+	var hud: Variant = get_parent().get("hud")
+	if hud != null and hud.has_method("stick_slot"):
+		slot = hud.call("stick_slot")
+	var side := minf(slot.size.y, slot.size.x)
+	if side < 8.0:
+		return
+	_stick.size = Vector2(side, side)
+	_stick.position = Vector2(slot.position.x + slot.size.x - side, slot.position.y + (slot.size.y - side) * 0.5)
+	var label_w := maxf(0.0, _stick.position.x - slot.position.x - 6.0)
+	_stick_label.visible = label_w > side * 0.45
+	_stick_label.position = Vector2(slot.position.x, slot.position.y)
+	_stick_label.size = Vector2(label_w, slot.size.y)
+	var upp := 1.0
+	var win := DisplayServer.window_get_size()
+	if win.x > 1 and vis.x > 1.0:
+		upp = maxf(vis.x / float(win.x), vis.y / float(win.y))
+	_stick_label.add_theme_font_size_override("font_size", int(maxf(16.0, 15.0 * upp)))
+	if not _stick_label.visible:
+		_stick_label.visible = true
+		_stick_label.position = Vector2(_stick.position.x, _stick.position.y + side - 22.0 * upp)
+		_stick_label.size = Vector2(side, 20.0 * upp)
+		_stick_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+
+func _apply_stick(delta: float) -> void:
+	if _input_muted or _stick == null:
+		return
+	var dir: Vector2 = _stick.dir
+	if dir.length() < 0.18:
+		return
+	_steered = true
+	# 摇杆向右，视线向右。摇杆向下，多看见地面。
+	_nudge(-dir.x * 0.9 * delta, -dir.y * 0.72 * delta)
+
+
+func _is_portrait() -> bool:
+	var win := DisplayServer.window_get_size()
+	if win.x > 2 and win.y > 2:
+		return win.y > win.x
+	var vis := get_viewport().get_visible_rect().size
+	return vis.y > vis.x
+
+
+func _refresh_framing() -> void:
+	var portrait := _is_portrait()
+	var key := "p" if portrait else "l"
+	var vis := get_viewport().get_visible_rect().size
+	key += ":%d:%d" % [int(vis.x), int(vis.y)]
+	if key == _framed_key:
+		return
+	_framed_key = key
+	_fov = PORTRAIT_FOV if portrait else DESK_FOV
+	if not _steered:
+		_yaw = 0.0
+		_pitch = PORTRAIT_PITCH if portrait else 0.0
+	_apply_pose()
+
+
+func _nudge(dyaw: float, dpitch: float) -> void:
+	var yaw := clampf(_yaw + dyaw, YAW_MIN, YAW_MAX)
+	var pitch := clampf(_pitch + dpitch, PITCH_MIN, PITCH_MAX)
+	var best := 0.0
+	if _pose_ok(yaw, pitch):
+		best = 1.0
+	else:
+		var lo := 0.0
+		var hi := 1.0
+		for _i in 8:
+			var mid := (lo + hi) * 0.5
+			if _pose_ok(lerpf(_yaw, yaw, mid), lerpf(_pitch, pitch, mid)):
+				best = mid
+				lo = mid
+			else:
+				hi = mid
+	if best > 0.001:
+		_yaw = lerpf(_yaw, yaw, best)
+		_pitch = lerpf(_pitch, pitch, best)
+	_apply_pose()
+
+
+func _basis_for(yaw: float, pitch: float) -> Basis:
+	var turned := _base_basis.rotated(Vector3.UP, yaw)
+	return turned.rotated(turned.x.normalized(), pitch)
+
+
+func _apply_pose() -> void:
+	if _camera == null:
+		return
+	_camera.position = _mount
+	_camera.basis = _basis_for(_yaw, _pitch)
+	_camera.fov = _fov
+
+
+func _play_span() -> Rect2:
+	var vis := get_viewport().get_visible_rect().size
+	var top := vis.y * 0.08
+	var bot := vis.y * 0.22
+	var hud: Variant = get_parent().get("hud")
+	if hud != null and hud.has_method("chrome_insets"):
+		var insets: Vector2 = hud.call("chrome_insets")
+		top = insets.x
+		bot = insets.y
+	var y0 := top + 6.0
+	var y1 := vis.y - bot - 6.0
+	if y1 - y0 < vis.y * 0.2:
+		y0 = vis.y * 0.08
+		y1 = vis.y * 0.72
+	return Rect2(vis.x * 0.04, y0, vis.x * 0.92, y1 - y0)
+
+
+func _pose_ok(yaw: float, pitch: float) -> bool:
+	if _camera == null:
+		return false
+	_camera.position = _mount
+	_camera.basis = _basis_for(yaw, pitch)
+	_camera.fov = _fov
+	var area := _play_span()
+	if area.size.x < 4.0 or area.size.y < 4.0:
+		return true
+	var shaft_n := 0
+	var n := 0
+	var cols := 5
+	var rows := 6
+	for r in rows:
+		for c in cols:
+			var sp := Vector2(
+				area.position.x + area.size.x * (float(c) + 0.5) / float(cols),
+				area.position.y + area.size.y * (float(r) + 0.5) / float(rows)
+			)
+			var kind := _ray_kind(sp)
+			n += 1
+			if kind == 0:
+				return false
+			if kind == 2:
+				shaft_n += 1
+	var corners: Array[Vector2] = [
+		area.position,
+		area.position + Vector2(area.size.x, 0.0),
+		area.position + Vector2(0.0, area.size.y),
+		area.position + Vector2(area.size.x, area.size.y),
+	]
+	for corner in corners:
+		var kind := _ray_kind(corner)
+		if kind != 1:
+			return false
+	return float(shaft_n) / float(n) <= 0.28
+
+
+func _ray_kind(screen_pos: Vector2) -> int:
+	var origin := _camera.project_ray_origin(screen_pos)
+	var dir := _camera.project_ray_normal(screen_pos)
+	var solid := 100000.0
+	var shaft := 100000.0
+	for box in _solids:
+		var dist := _ray_aabb(origin, dir, box)
+		if dist >= 0.0 and dist < solid:
+			solid = dist
+	for box in _shaft:
+		var dist := _ray_aabb(origin, dir, box)
+		if dist >= 0.0 and dist < shaft:
+			shaft = dist
+	if solid > 30.0 and shaft > 30.0:
+		return 0
+	if shaft + 0.02 < solid:
+		return 2
+	return 1
+
+
+func _sweep(which: String) -> Vector2:
+	var lo := 0.0
+	var hi := 0.0
+	var step := 0.02
+	if which == "yaw":
+		var y := 0.0
+		while y - step >= YAW_MIN and _pose_ok(y - step, _pitch):
+			y -= step
+			lo = y
+		y = 0.0
+		while y + step <= YAW_MAX and _pose_ok(y + step, _pitch):
+			y += step
+			hi = y
+	else:
+		var p := 0.0
+		while p - step >= PITCH_MIN and _pose_ok(_yaw, p - step):
+			p -= step
+			lo = p
+		p = 0.0
+		while p + step <= PITCH_MAX and _pose_ok(_yaw, p + step):
+			p += step
+			hi = p
+	_apply_pose()
+	return Vector2(lo, hi)
+
+
+func _capture_orbit() -> void:
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	DisplayServer.window_set_size(Vector2i(390, 844))
+	get_window().size = Vector2i(390, 844)
+	for _i in 30:
+		await get_tree().process_frame
+	_framed_key = ""
+	_steered = false
+	_refresh_framing()
+	_layout_stick()
+	for _i in 6:
+		await get_tree().process_frame
+	var vis := get_viewport().get_visible_rect()
+	print("SPACE vp %s vis %s win %s fov %.1f pitch %.2f home_ok %s" % [
+		get_viewport().size, vis, DisplayServer.window_get_size(), _fov, rad_to_deg(_pitch), _pose_ok(_yaw, _pitch)
+	])
+	_apply_pose()
+	var home_seam := _camera.unproject_position(Vector3(0.0, 0.55, -1.16))
+	print("HOME pick %s at %s" % [pick(home_seam), home_seam])
+	await RenderingServer.frame_post_draw
+	_save_shot("/workspace/lulu-zhuogui/apps/game/build/shots/orbit-start.png")
+	_steered = true
+	_input_muted = true
+	if _stick != null:
+		_stick.dir = Vector2(0.62, 0.55)
+		_stick.queue_redraw()
+	_nudge(-0.08, -0.05)
+	for _i in 4:
+		await get_tree().process_frame
+	print("STICK yaw %.2f pitch %.2f" % [rad_to_deg(_yaw), rad_to_deg(_pitch)])
+	await RenderingServer.frame_post_draw
+	_save_shot("/workspace/lulu-zhuogui/apps/game/build/shots/orbit-stick.png")
+	if _stick != null:
+		_stick.dir = Vector2.ZERO
+		_stick.queue_redraw()
+	var y := _yaw
+	var p := _pitch
+	while p - 0.02 >= PITCH_MIN and _pose_ok(y, p - 0.02):
+		p -= 0.02
+	while y - 0.02 >= YAW_MIN and _pose_ok(y - 0.02, p):
+		y -= 0.02
+	_yaw = y
+	_pitch = p
+	_apply_pose()
+	var past := _pose_ok(y - 0.02, p) or _pose_ok(y, p - 0.02)
+	print("LIMIT yaw %.2f pitch %.2f past %s ok %s" % [rad_to_deg(_yaw), rad_to_deg(_pitch), past, _pose_ok(_yaw, _pitch)])
+	for _i in 4:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save_shot("/workspace/lulu-zhuogui/apps/game/build/shots/orbit-limit.png")
+	var seam := Vector3(0.0, 0.7, -1.16)
+	var sp := _camera.unproject_position(seam)
+	print("PICK %s at %s" % [pick(sp), sp])
+	get_tree().quit(0)
 
 
 func _ray_aabb(origin: Vector3, dir: Vector3, box: AABB) -> float:
@@ -499,3 +816,45 @@ func _ray_aabb(origin: Vector3, dir: Vector3, box: AABB) -> float:
 	if tmax < 0.0:
 		return -1.0
 	return tmin
+
+class StickPad extends Control:
+	var dir := Vector2.ZERO
+	var _held := false
+
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_STOP
+
+	func _gui_input(event: InputEvent) -> void:
+		if event is InputEventMouseButton:
+			var mouse := event as InputEventMouseButton
+			if mouse.button_index != MOUSE_BUTTON_LEFT:
+				return
+			_held = mouse.pressed
+			if mouse.pressed:
+				_from(mouse.position)
+			else:
+				dir = Vector2.ZERO
+				queue_redraw()
+			accept_event()
+		elif event is InputEventMouseMotion and _held:
+			_from((event as InputEventMouseMotion).position)
+			accept_event()
+
+	func _from(point: Vector2) -> void:
+		var center := size * 0.5
+		var radius := minf(size.x, size.y) * 0.42
+		if radius < 1.0:
+			return
+		var offset := point - center
+		if offset.length() > radius:
+			offset = offset.normalized() * radius
+		dir = offset / radius
+		queue_redraw()
+
+	func _draw() -> void:
+		var center := size * 0.5
+		var radius := minf(size.x, size.y) * 0.5
+		draw_circle(center, radius * 0.96, Color(0.04, 0.045, 0.05, 0.82))
+		draw_arc(center, radius * 0.9, 0.0, TAU, 36, Color(0.8, 0.76, 0.64, 0.95), maxf(2.0, radius * 0.07))
+		var knob := center + dir * radius * 0.4
+		draw_circle(knob, radius * 0.32, Color(0.92, 0.88, 0.74, 0.98))

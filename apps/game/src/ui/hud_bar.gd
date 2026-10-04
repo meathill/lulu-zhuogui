@@ -129,6 +129,16 @@ func set_zhou(text: String) -> void:
 	_zhou.text = text
 
 
+func chrome_insets() -> Vector2:
+	var top_h := 0.0
+	var bot_h := 0.0
+	if _top != null:
+		top_h = _top.size.y
+	if _bottom != null:
+		bot_h = _bottom.size.y
+	return Vector2(top_h, bot_h)
+
+
 func set_dialogue(text: String) -> void:
 	_dialogue.text = text
 
@@ -429,6 +439,34 @@ func _layout_end(vis: Vector2, margin: float, gap: float, min_btn: float, font_b
 		_back.position = Vector2(margin, by + min_btn + gap)
 		_back.size = Vector2(bw, min_btn)
 
+
+
+func stick_slot() -> Rect2:
+	# 摇杆落在底栏里、三个操作钮的右侧。盖不住门，也不改按钮的位置。
+	if _bottom == null or _bottom_buttons.is_empty():
+		var vis := _visible_size()
+		return Rect2(vis.x * 0.70, vis.y * 0.70, vis.x * 0.26, vis.y * 0.10)
+	var right := 0.0
+	var top := 100000.0
+	var bottom := 0.0
+	for button in _bottom_buttons:
+		right = maxf(right, button.position.x + button.size.x)
+		top = minf(top, button.position.y)
+		bottom = maxf(bottom, button.position.y + button.size.y)
+	var y := _bottom.position.y + top
+	var h := bottom - top
+	var dialogue_y := _bottom.position.y + _dialogue.position.y
+	if _dialogue.position.y > top + 4.0:
+		h = minf(h, maxf(8.0, dialogue_y - y - 4.0))
+	var x := _bottom.position.x + right + 10.0
+	var w := _bottom.position.x + _bottom.size.x - 8.0 - x
+	if w < h * 0.85:
+		var side := minf(h * 1.15, _bottom.size.x * 0.22)
+		var bx := _bottom.position.x + _bottom.size.x - side - 8.0
+		var by := _bottom.position.y + 6.0
+		var bh := minf(side, maxf(8.0, dialogue_y - by - 4.0))
+		return Rect2(bx, by, side, bh)
+	return Rect2(x, y, w, maxf(8.0, h))
 
 
 func _attach(node: Node, parent: Node) -> void:
