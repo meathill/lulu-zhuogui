@@ -1,15 +1,21 @@
 import { mkdirSync, writeFileSync } from "node:fs"
-import { dirname } from "node:path"
-import { LEVEL_OUTPUT_PATH, loadSourceLevel } from "./load-level.ts"
+import { resolve } from "node:path"
+import { LEVEL_OUTPUT_DIR, loadAllSources } from "./load-level.ts"
 
-const result = loadSourceLevel()
-if (result.issues.length > 0 || result.level === null) {
-  for (const issue of result.issues) {
-    console.error(`${issue.path}: ${issue.message}`)
+mkdirSync(LEVEL_OUTPUT_DIR, { recursive: true })
+let failed = false
+for (const source of loadAllSources()) {
+  if (source.result.issues.length > 0 || source.result.level === null) {
+    failed = true
+    for (const issue of source.result.issues) {
+      console.error(`${source.fileName} ${issue.path}: ${issue.message}`)
+    }
+    continue
   }
+  const output = resolve(LEVEL_OUTPUT_DIR, source.fileName.replace(/\.yaml$/, ".json"))
+  writeFileSync(output, `${JSON.stringify(source.raw, null, 2)}\n`, "utf8")
+  console.log(`已导出 ${source.result.level.id} -> ${output}`)
+}
+if (failed) {
   process.exit(1)
 }
-
-mkdirSync(dirname(LEVEL_OUTPUT_PATH), { recursive: true })
-writeFileSync(LEVEL_OUTPUT_PATH, `${JSON.stringify(result.level, null, 2)}\n`, "utf8")
-console.log(`已导出 ${result.level.id} -> ${LEVEL_OUTPUT_PATH}`)

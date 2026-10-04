@@ -1,0 +1,171 @@
+{
+  "id": "level-10",
+  "title": "第10关 · 林小禾卧室 · 梦魇",
+  "goal": "第一次硬仗。镇宅守门窗，定神顶住，五雷扔在床前地上。阴差带走的布丁不会来助战。",
+  "regenRate": 48,
+  "placeCost": 8,
+  "lightningCost": 6,
+  "wardDamagePerSecond": 70,
+  "lightningDamage": 55,
+  "failThreshold": 3,
+  "initialEnergy": 100,
+  "energyMax": 100,
+  "cameraMode": "single",
+  "winKind": "boss",
+  "tools": [
+    "ward",
+    "hold",
+    "lightning",
+    "tear"
+  ],
+  "bg": [
+    0.13,
+    0.1,
+    0.12
+  ],
+  "hotspots": [
+    {
+      "id": "door-seam",
+      "label": "门下缝",
+      "x": 520,
+      "y": 520,
+      "role": "env",
+      "camera": "A",
+      "accepts": [
+        "ward",
+        "tear"
+      ]
+    },
+    {
+      "id": "window",
+      "label": "窗沿",
+      "x": 1320,
+      "y": 420,
+      "role": "env",
+      "camera": "A",
+      "accepts": [
+        "ward",
+        "tear"
+      ]
+    },
+    {
+      "id": "bed",
+      "label": "床周定神",
+      "x": 960,
+      "y": 600,
+      "role": "env",
+      "camera": "A",
+      "accepts": [
+        "hold",
+        "tear"
+      ]
+    },
+    {
+      "id": "bedroom-ground",
+      "label": "床前地面",
+      "x": 960,
+      "y": 800,
+      "role": "ground",
+      "camera": "A",
+      "accepts": [
+        "lightning"
+      ],
+      "lightningHits": [
+        "nightmare"
+      ]
+    },
+    {
+      "id": "inlet",
+      "label": "空调管",
+      "x": 1320,
+      "y": 700,
+      "role": "env",
+      "camera": "A"
+    }
+  ],
+  "spirit": {
+    "id": "nightmare",
+    "maxHp": 160,
+    "moveDurationSec": 4,
+    "entryHotspotId": "door-seam"
+  },
+  "meters": [
+    {
+      "id": "fear",
+      "label": "小禾惧值",
+      "start": 0,
+      "max": 100,
+      "failAt": 100,
+      "mode": "up",
+      "failText": "小禾被梦魇缠住，醒不过来了。",
+      "perSecond": 12
+    }
+  ],
+  "waves": [
+    {
+      "at": 0.3,
+      "actors": [
+        {
+          "id": "nightmare",
+          "label": "梦魇",
+          "kind": "boss",
+          "hp": 160,
+          "speed": 150,
+          "path": [
+            "door-seam",
+            "bed"
+          ],
+          "onArrive": "park",
+          "wardImmune": true
+        }
+      ]
+    },
+    {
+      "at": 0.6,
+      "actors": [
+        {
+          "id": "seep-1",
+          "label": "渗入祟",
+          "kind": "sui",
+          "hp": 22,
+          "speed": 200,
+          "path": [
+            "inlet",
+            "window"
+          ],
+          "onArrive": "fear"
+        }
+      ]
+    },
+    {
+      "at": 1.2,
+      "actors": [
+        {
+          "id": "seep-2",
+          "label": "渗入祟",
+          "kind": "sui",
+          "hp": 22,
+          "speed": 200,
+          "path": [
+            "door-seam",
+            "bed"
+          ],
+          "onArrive": "fear"
+        }
+      ]
+    }
+  ],
+  "intro": {
+    "image": "res://assets/stills/level-10.png",
+    "lines": [
+      "林小禾的卧室。她盖着被子，呼吸灯很弱。天花板后面是那条黑巷。",
+      "老周：符贴门缝窗沿。定神顶住床边那团，五雷往地上引。"
+    ]
+  },
+  "outro": {
+    "image": "res://assets/stills/level-10.png",
+    "lines": [
+      "天雷落下，梦魇散了。小禾喘上气来。项圈在桌上微微发热。"
+    ]
+  }
+}

@@ -17,3 +17,6 @@ tools/godot/
 
 # OS
 .DS_Store
+
+# 网页导出产物，不进 master
+apps/game/build/

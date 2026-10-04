@@ -1,20 +1,17 @@
-# WIP · M1 灰盒
+# WIP · 第 1–10 关灰盒
 
-第 1 关「让人发冷的电梯」先跑通手感，不铺官网、后端、Steam、CI。
+第 1–10 关可以选关打完。过场是静帧加字幕，不是动画。
 
 ## 这次做完
 
-- [x] pnpm + turborepo 工作区：`dev:game`、`build:data`、`check:data`
-- [x] `apps/game`：Godot 4.3、`gl_compatibility`、逻辑分辨率 1920×1080、`canvas_items` + `expand`
-- [x] 单例桩：GameManager、InputManager、SaveManager（本地 JSON；Steam 只写在注释里）、AudioManager
-- [x] 灰盒场景：轿厢色块、门下缝 `HotspotSlot`（EMPTY / OCCUPIED）、点击贴符、符力自回、鬼渣从门缝走向中央、符持续掉血
-- [x] 发冷乘客到 3 失败，并显示老周一句人话；鬼血归零胜利
-- [x] `packages/gamedata` 第 1 关 yaml、导出到 `apps/game/assets/data/`、缺符位 id 的 vitest
+- [x] 选关场景，十个关卡各一张场景，共用灰盒脚本
+- [x] 符贴环境；显形只贴第 3 关醉汉；五雷扔地上；驱离不伤血；定神后召唤阴差，普通祟拒收；撕符拆粘连
+- [x] 第 5 关切两路监控；第 7 关把布丁引进角落再交接，攻击会伤狗；第 8 关没有布丁，点书包看狗牌和三句台词；第 9 关空车棚，只有镇守和撕符；第 10 关梦魇，阴差带走布丁则没有助战
+- [x] 关卡 yaml 导出到 `apps/game/assets/data`
+- [x] 无头自测每关一胜一负
 
-## 下一步
+## 还没做
 
-- [ ] 侦察问号、门下缝被踢、多缝位点、浓度条、停 -3 的一小大波
-- [ ] 发冷改成真乘客进出，而不是鬼摸到中央就 +1
-- [ ] 中文字体入库（现在靠系统字体，没有 CJK 字体时字会是方框）
-- [ ] 符力维持消耗、符力碎片、老周开场台词
-- [ ] 不在 M1：Steam GDExtension、官网、后端、CI
+- [ ] 正式立绘、逐帧演出、符力维持消耗的细账
+- [ ] 第 11 关以后
+- [ ] Steam、官网、后端、CI

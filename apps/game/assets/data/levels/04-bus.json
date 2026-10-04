@@ -1,0 +1,228 @@
+{
+  "id": "level-04",
+  "title": "第4关 · 末班 404",
+  "goal": "驱离贴在女孩旁座，把善鬼赶到后头。邪祟用镇守挡。驱离不伤血。",
+  "regenRate": 48,
+  "placeCost": 8,
+  "lightningCost": 6,
+  "wardDamagePerSecond": 70,
+  "lightningDamage": 60,
+  "failThreshold": 3,
+  "initialEnergy": 100,
+  "energyMax": 100,
+  "cameraMode": "single",
+  "winKind": "clear",
+  "tools": [
+    "redirect",
+    "ward",
+    "tear"
+  ],
+  "bg": [
+    0.1,
+    0.12,
+    0.13
+  ],
+  "hotspots": [
+    {
+      "id": "door",
+      "label": "中门",
+      "x": 420,
+      "y": 500,
+      "role": "env",
+      "camera": "A"
+    },
+    {
+      "id": "aisle",
+      "label": "过道",
+      "x": 780,
+      "y": 500,
+      "role": "env",
+      "camera": "A",
+      "accepts": [
+        "ward",
+        "tear"
+      ]
+    },
+    {
+      "id": "seat",
+      "label": "女孩旁座",
+      "x": 1120,
+      "y": 430,
+      "role": "env",
+      "camera": "A",
+      "accepts": [
+        "redirect",
+        "tear"
+      ],
+      "redirectTo": [
+        "back",
+        "exit"
+      ],
+      "redirectArrive": "exit"
+    },
+    {
+      "id": "front",
+      "label": "前排",
+      "x": 1500,
+      "y": 320,
+      "role": "env",
+      "camera": "A"
+    },
+    {
+      "id": "back",
+      "label": "后半节",
+      "x": 1120,
+      "y": 700,
+      "role": "env",
+      "camera": "A"
+    },
+    {
+      "id": "exit",
+      "label": "后门",
+      "x": 1500,
+      "y": 700,
+      "role": "env",
+      "camera": "A"
+    }
+  ],
+  "spirit": {
+    "id": "evil-1",
+    "maxHp": 26,
+    "moveDurationSec": 4,
+    "entryHotspotId": "door"
+  },
+  "meters": [
+    {
+      "id": "fear",
+      "label": "女孩惧值",
+      "start": 0,
+      "max": 3,
+      "failAt": 3,
+      "mode": "up",
+      "failText": "靠窗女孩被邪祟贴上了。"
+    },
+    {
+      "id": "clog",
+      "label": "前排堵塞",
+      "start": 0,
+      "max": 3,
+      "failAt": 3,
+      "mode": "up",
+      "failText": "善鬼挤回前排，车厢乱了。"
+    }
+  ],
+  "waves": [
+    {
+      "at": 0.3,
+      "actors": [
+        {
+          "id": "good-1",
+          "label": "善鬼",
+          "kind": "good",
+          "hp": 20,
+          "speed": 240,
+          "path": [
+            "door",
+            "aisle",
+            "seat",
+            "front"
+          ],
+          "onArrive": "clog",
+          "redirectable": true,
+          "damageable": false
+        }
+      ]
+    },
+    {
+      "at": 0.7,
+      "actors": [
+        {
+          "id": "evil-1",
+          "label": "邪祟",
+          "kind": "evil",
+          "hp": 26,
+          "speed": 220,
+          "path": [
+            "door",
+            "aisle",
+            "seat"
+          ],
+          "onArrive": "fear"
+        }
+      ]
+    },
+    {
+      "at": 1.2,
+      "actors": [
+        {
+          "id": "good-2",
+          "label": "善鬼",
+          "kind": "good",
+          "hp": 20,
+          "speed": 240,
+          "path": [
+            "door",
+            "aisle",
+            "seat",
+            "front"
+          ],
+          "onArrive": "clog",
+          "redirectable": true,
+          "damageable": false
+        }
+      ]
+    },
+    {
+      "at": 1.6,
+      "actors": [
+        {
+          "id": "evil-2",
+          "label": "邪祟",
+          "kind": "evil",
+          "hp": 26,
+          "speed": 220,
+          "path": [
+            "door",
+            "aisle",
+            "seat"
+          ],
+          "onArrive": "fear"
+        }
+      ]
+    },
+    {
+      "at": 2.1,
+      "actors": [
+        {
+          "id": "good-3",
+          "label": "善鬼",
+          "kind": "good",
+          "hp": 20,
+          "speed": 230,
+          "path": [
+            "door",
+            "aisle",
+            "seat",
+            "front"
+          ],
+          "onArrive": "clog",
+          "redirectable": true,
+          "damageable": false
+        }
+      ]
+    }
+  ],
+  "intro": {
+    "image": "res://assets/stills/level-04.png",
+    "lines": [
+      "末班 404。车上很多是赶路的善鬼，不害人。",
+      "老周：驱离贴小姑娘座旁边。把他们往后排请，到站自己下。别拿五雷轰座椅。"
+    ]
+  },
+  "outro": {
+    "image": "res://assets/stills/level-04.png",
+    "lines": [
+      "旁边不那么冷了。后排的善鬼到站下车。"
+    ]
+  }
+}

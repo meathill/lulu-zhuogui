@@ -1,0 +1,156 @@
+{
+  "id": "level-07",
+  "title": "第7关 · 步道上的黄影子",
+  "goal": "驱离把布丁引进角落，撕开粘着的祟，定神，召唤阴差。五雷会伤到狗。",
+  "regenRate": 48,
+  "placeCost": 8,
+  "lightningCost": 6,
+  "wardDamagePerSecond": 70,
+  "lightningDamage": 60,
+  "failThreshold": 3,
+  "initialEnergy": 100,
+  "energyMax": 100,
+  "cameraMode": "single",
+  "winKind": "summon",
+  "tools": [
+    "redirect",
+    "hold",
+    "tear",
+    "lightning",
+    "summon",
+    "tame",
+    "disperse"
+  ],
+  "bg": [
+    0.12,
+    0.13,
+    0.1
+  ],
+  "hotspots": [
+    {
+      "id": "flower",
+      "label": "花坛缺口",
+      "x": 620,
+      "y": 520,
+      "role": "env",
+      "camera": "A",
+      "accepts": [
+        "redirect",
+        "tear"
+      ],
+      "redirectTo": [
+        "corner"
+      ],
+      "redirectArrive": "corner"
+    },
+    {
+      "id": "corner",
+      "label": "角落坑",
+      "x": 1100,
+      "y": 720,
+      "role": "env",
+      "camera": "A",
+      "accepts": [
+        "hold",
+        "tear"
+      ]
+    },
+    {
+      "id": "out",
+      "label": "步道出口",
+      "x": 1100,
+      "y": 320,
+      "role": "env",
+      "camera": "A"
+    },
+    {
+      "id": "ground",
+      "label": "地面引雷",
+      "x": 820,
+      "y": 720,
+      "role": "ground",
+      "camera": "A",
+      "accepts": [
+        "lightning"
+      ],
+      "lightningHits": [
+        "pudding"
+      ]
+    }
+  ],
+  "spirit": {
+    "id": "pudding",
+    "maxHp": 80,
+    "moveDurationSec": 4,
+    "entryHotspotId": "flower"
+  },
+  "meters": [
+    {
+      "id": "yang",
+      "label": "步道阳气",
+      "start": 100,
+      "max": 100,
+      "failAt": 0,
+      "mode": "down",
+      "failText": "步道阳气被啃光了。",
+      "perSecond": -36,
+      "whileAttached": "pudding"
+    }
+  ],
+  "waves": [
+    {
+      "at": 0.25,
+      "actors": [
+        {
+          "id": "pudding",
+          "label": "布丁",
+          "kind": "dog",
+          "hp": 80,
+          "speed": 240,
+          "path": [
+            "flower",
+            "out"
+          ],
+          "onArrive": "escape",
+          "escapeText": "布丁没被引进角落，跑掉了。",
+          "named": true,
+          "redirectable": true,
+          "attached": true,
+          "mustResolve": false,
+          "damageable": false
+        },
+        {
+          "id": "clump",
+          "label": "粘祟",
+          "kind": "sui",
+          "hp": 20,
+          "speed": 40,
+          "path": [
+            "flower"
+          ],
+          "clingTo": "pudding",
+          "afterTearArrive": "park",
+          "afterTearPath": [
+            "corner"
+          ],
+          "attached": true,
+          "mustResolve": false,
+          "damageable": false
+        }
+      ]
+    }
+  ],
+  "intro": {
+    "image": "res://assets/stills/level-07.png",
+    "lines": [
+      "三号花坛。黄影子是条肥拉布拉多，不啃阳气，在找放学的味道。",
+      "老周：驱离贴花坛口，把它往死角赶。祟粘上了就撕符。五雷别往它跟前扔。"
+    ]
+  },
+  "outro": {
+    "image": "res://assets/stills/level-07.png",
+    "lines": [
+      "阴差套上引魂索。刻着「布丁」的项圈留在你手里。"
+    ]
+  }
+}

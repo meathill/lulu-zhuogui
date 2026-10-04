@@ -1,0 +1,130 @@
+id: level-03
+title: 第3关 · 路口便利店的香炉
+goal: 先把显形贴在醉汉身上，再往地上打雷。别让面包和烟凑满。
+regenRate: 48
+placeCost: 8
+lightningCost: 6
+wardDamagePerSecond: 70
+lightningDamage: 60
+failThreshold: 3
+initialEnergy: 100
+energyMax: 100
+cameraMode: single
+winKind: clear
+tools: [reveal, ward, lightning, tear]
+bg: [0.13, 0.12, 0.1]
+hotspots:
+  - id: drunk
+    label: 醉汉后颈
+    x: 1240
+    y: 460
+    role: body
+    camera: A
+    accepts: [reveal]
+  - id: zebra
+    label: 斑马线侧
+    x: 640
+    y: 400
+    role: env
+    camera: A
+    accepts: [ward, tear]
+  - id: door-seam
+    label: 店门缝
+    x: 980
+    y: 560
+    role: env
+    camera: A
+    accepts: [ward, tear]
+  - id: censer
+    label: 香炉
+    x: 980
+    y: 400
+    role: env
+    camera: A
+  - id: ground
+    label: 炉前地面
+    x: 820
+    y: 700
+    role: ground
+    camera: A
+    accepts: [lightning]
+    lightningHits: [core]
+spirit:
+  id: core
+  maxHp: 100
+  moveDurationSec: 4
+  entryHotspotId: zebra
+meters:
+  - id: offering
+    label: 香炉供品
+    start: 1
+    max: 6
+    failAt: 6
+    mode: up
+    failText: 三块面包三只烟凑满了，香炉喂饱了。
+waves:
+  - at: 0.4
+    actors:
+      - id: core
+        label: 附身核
+        kind: core
+        hp: 100
+        speed: 78
+        path: [zebra, censer]
+        onArrive: offering
+        wardImmune: true
+        immuneUntilReveal: true
+  - at: 0.45
+    actors:
+      - id: wisp-1
+        label: 游离祟
+        kind: sui
+        hp: 20
+        speed: 260
+        path: [zebra, censer]
+        onArrive: offering
+  - at: 0.9
+    actors:
+      - id: wisp-2
+        label: 游离祟
+        kind: sui
+        hp: 20
+        speed: 260
+        path: [door-seam, censer]
+        onArrive: offering
+  - at: 1.4
+    actors:
+      - id: wisp-3
+        label: 游离祟
+        kind: sui
+        hp: 20
+        speed: 260
+        path: [zebra, censer]
+        onArrive: offering
+  - at: 1.9
+    actors:
+      - id: wisp-4
+        label: 游离祟
+        kind: sui
+        hp: 20
+        speed: 260
+        path: [door-seam, censer]
+        onArrive: offering
+  - at: 2.4
+    actors:
+      - id: wisp-5
+        label: 游离祟
+        kind: sui
+        hp: 20
+        speed: 260
+        path: [zebra, censer]
+        onArrive: offering
+intro:
+  image: res://assets/stills/level-03.png
+  lines:
+    - "路口香炉上已经有一块面包。醉汉翻着白眼在续供。"
+    - "老周：被附身了，显形才能往他后颈贴。现形之后雷扔地上，别打活人。"
+outro:
+  image: res://assets/stills/level-03.png
+  lines:
+    - "附身核散了。醉汉坐在地上，问自己怎么买了这么多面包。"

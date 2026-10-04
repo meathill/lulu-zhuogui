@@ -1,0 +1,94 @@
+id: level-02
+title: 第2关 · 热水器在哭
+goal: 走廊贴镇宅，五雷扔在地上清哭声团。别劈到活人。
+regenRate: 48
+placeCost: 8
+lightningCost: 6
+wardDamagePerSecond: 70
+lightningDamage: 60
+failThreshold: 3
+initialEnergy: 100
+energyMax: 100
+cameraMode: single
+winKind: clear
+tools: [ward, lightning, tear]
+bg: [0.14, 0.12, 0.11]
+hotspots:
+  - id: bath-door
+    label: 卫生间门框
+    x: 520
+    y: 480
+    role: env
+    camera: A
+    accepts: [ward, tear]
+  - id: hall
+    label: 走廊地面
+    x: 960
+    y: 560
+    role: env
+    camera: A
+    accepts: [ward, tear]
+  - id: room-door
+    label: 室友门缝
+    x: 1400
+    y: 480
+    role: env
+    camera: A
+  - id: ground
+    label: 地面引雷
+    x: 960
+    y: 740
+    role: ground
+    camera: A
+    accepts: [lightning]
+    lightningHits: [cry]
+spirit:
+  id: cry
+  maxHp: 70
+  moveDurationSec: 4
+  entryHotspotId: bath-door
+meters:
+  - id: yang
+    label: 室友阳气
+    start: 3
+    max: 3
+    failAt: 0
+    mode: down
+    failText: 室友高烧倒下了。
+waves:
+  - at: 0.3
+    actors:
+      - id: leak-1
+        label: 地漏祟
+        kind: sui
+        hp: 22
+        speed: 300
+        path: [bath-door, hall, room-door]
+        onArrive: yang
+  - at: 1.0
+    actors:
+      - id: leak-2
+        label: 门缝祟
+        kind: sui
+        hp: 22
+        speed: 300
+        path: [hall, room-door]
+        onArrive: yang
+  - at: 1.7
+    actors:
+      - id: cry
+        label: 哭声团
+        kind: sui
+        hp: 70
+        speed: 180
+        path: [bath-door, hall, room-door]
+        onArrive: yang
+intro:
+  image: res://assets/stills/level-02.png
+  lines:
+    - "槐安里合租房。祟往发烧的室友那头凑。"
+    - "老周：镇宅贴走廊地面。嫌慢就往地上扔五雷，别冲着活人砸。"
+outro:
+  image: res://assets/stills/level-02.png
+  lines:
+    - "火灭了，室友倒头睡了。铜铃远远响了一下。"

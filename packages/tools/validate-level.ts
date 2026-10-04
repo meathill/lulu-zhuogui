@@ -101,6 +101,98 @@ function readSpirit(value: unknown, issues: ValidationIssue[]): SpiritDefinition
   return { id, maxHp, moveDurationSec, entryHotspotId }
 }
 
+
+const TOOL_IDS = new Set(["ward", "lightning", "reveal", "redirect", "hold", "tear", "summon", "tame", "disperse"])
+const ROLES = new Set(["env", "ground", "body", "backpack"])
+
+function readStringList(value: unknown, path: string, issues: ValidationIssue[]): string[] | null {
+  if (!Array.isArray(value) || value.length === 0) {
+    pushIssue(issues, path, "必须是非空字符串数组")
+    return null
+  }
+  const list: string[] = []
+  for (let index = 0; index < value.length; index += 1) {
+    const item = readString(value[index], `${path}[${index}]`, issues)
+    if (item === null) {
+      return null
+    }
+    list.push(item)
+  }
+  return list
+}
+
+function validateBoard(raw: Record<string, unknown>, hotspotIds: Set<string>, issues: ValidationIssue[]): void {
+  const cameraMode = raw.cameraMode
+  if (cameraMode !== undefined && cameraMode !== "single" && cameraMode !== "multi") {
+    pushIssue(issues, "cameraMode", "只能是 single 或 multi")
+  }
+  const winKind = raw.winKind
+  if (winKind !== undefined && !["clear", "summon", "form-send", "backpack", "boss"].includes(String(winKind))) {
+    pushIssue(issues, "winKind", "胜负类型不认识")
+  }
+  if (Array.isArray(raw.tools)) {
+    for (const tool of raw.tools) {
+      if (tool === "anshen" || tool === "安神") {
+        pushIssue(issues, "tools", "没有安神这张符")
+      } else if (typeof tool !== "string" || !TOOL_IDS.has(tool)) {
+        pushIssue(issues, "tools", `不认识的符：${String(tool)}`)
+      }
+    }
+  }
+  if (Array.isArray(raw.hotspots)) {
+    raw.hotspots.forEach((item, index) => {
+      if (!isRecord(item)) {
+        return
+      }
+      const role = item.role ?? "env"
+      if (typeof role !== "string" || !ROLES.has(role)) {
+        pushIssue(issues, `hotspots[${index}].role`, "位点类型不认识")
+      }
+      const accepts = Array.isArray(item.accepts) ? item.accepts.map(String) : []
+      if (accepts.includes("lightning") && role !== "ground") {
+        pushIssue(issues, `hotspots[${index}]`, "五雷只能扔在地面")
+      }
+      if (accepts.includes("reveal") && role !== "body") {
+        pushIssue(issues, `hotspots[${index}]`, "显形只能贴在被附身的人身上")
+      }
+      if (role === "body" && accepts.some((tool) => tool !== "reveal" && tool !== "tear")) {
+        pushIssue(issues, `hotspots[${index}]`, "活人身上只能贴显形")
+      }
+      for (const target of Array.isArray(item.redirectTo) ? item.redirectTo : []) {
+        if (!hotspotIds.has(String(target))) {
+          pushIssue(issues, `hotspots[${index}].redirectTo`, `找不到符位 ${String(target)}`)
+        }
+      }
+    })
+  }
+  if (!Array.isArray(raw.waves)) {
+    return
+  }
+  raw.waves.forEach((wave, waveIndex) => {
+    if (!isRecord(wave) || !Array.isArray(wave.actors)) {
+      pushIssue(issues, `waves[${waveIndex}]`, "波次要有 actors")
+      return
+    }
+    wave.actors.forEach((actor, actorIndex) => {
+      const path = `waves[${waveIndex}].actors[${actorIndex}]`
+      if (!isRecord(actor)) {
+        pushIssue(issues, path, "敌人必须是对象")
+        return
+      }
+      readString(actor.id, `${path}.id`, issues)
+      readString(actor.kind, `${path}.kind`, issues)
+      const route = readStringList(actor.path, `${path}.path`, issues)
+      if (route) {
+        for (const hop of route) {
+          if (!hotspotIds.has(hop)) {
+            pushIssue(issues, `${path}.path`, `找不到符位 ${hop}`)
+          }
+        }
+      }
+    })
+  })
+}
+
 export function readLevel(raw: unknown): ReadLevelResult {
   const issues: ValidationIssue[] = []
   if (!isRecord(raw)) {
@@ -124,6 +216,10 @@ export function readLevel(raw: unknown): ReadLevelResult {
   }
   if (spirit && hotspots && !hotspots.some((hotspot) => hotspot.id === spirit.entryHotspotId)) {
     pushIssue(issues, "spirit.entryHotspotId", `找不到符位 ${spirit.entryHotspotId}`)
+  }
+
+  if (hotspots) {
+    validateBoard(raw, new Set(hotspots.map((hotspot) => hotspot.id)), issues)
   }
 
   if (

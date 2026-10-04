@@ -12,3 +12,9 @@
 
 - Node >= 24 直接跑 `.ts`，不要 tsc / ts-node。
 - 相对导入写上 `.ts` 后缀。`@lulu/shared-types` 的入口也是 `.ts`，不要指望从 `node_modules` 当运行时代码加载（类型导入会被擦掉）。
+
+## 网页导出
+
+- 模板放在 `~/.local/share/godot/export_templates/4.3.stable/`，含 `web_nothreads_release.zip`。模板不入库。
+- 预设 `Web` 关闭 `variant/thread_support`。GitHub Pages 没有 COOP/COEP，开线程的包打不开。
+- 导出前先建好 `apps/game/build/web/`。产物不进 master，单独放托管分支。

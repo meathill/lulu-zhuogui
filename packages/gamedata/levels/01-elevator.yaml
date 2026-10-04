@@ -1,17 +1,104 @@
-# 第 1 关「让人发冷的电梯」灰盒数值。改完执行 pnpm build:data。
 id: level-01
-title: 让人发冷的电梯
-regenRate: 12
-placeCost: 35
-wardDamagePerSecond: 30
+title: 第1关 · 让人发冷的电梯
+goal: 把镇守贴在缝上，别让三个乘客发冷。人进出会踢掉门下缝。
+regenRate: 48
+placeCost: 8
+lightningCost: 6
+wardDamagePerSecond: 70
+lightningDamage: 60
 failThreshold: 3
-initialEnergy: 40
+initialEnergy: 100
 energyMax: 100
+cameraMode: single
+winKind: clear
+tools: [ward, tear]
+kickSlot: door-bottom-seam
+kickAt: 1.05
+bg: [0.12, 0.13, 0.16]
 hotspots:
   - id: door-bottom-seam
     label: 门下缝
+    x: 960
+    y: 700
+    role: env
+    camera: A
+    accepts: [ward, tear]
+  - id: door-seam
+    label: 门缝
+    x: 620
+    y: 520
+    role: env
+    camera: A
+    accepts: [ward, tear]
+  - id: floor-panel
+    label: 楼层板缝
+    x: 1280
+    y: 430
+    role: env
+    camera: A
+    accepts: [ward, tear]
+  - id: center
+    label: 广告屏
+    x: 960
+    y: 460
+    role: env
+    camera: A
 spirit:
   id: thick-slag
-  maxHp: 90
-  moveDurationSec: 6
+  maxHp: 80
+  moveDurationSec: 4
   entryHotspotId: door-bottom-seam
+meters:
+  - id: cold
+    label: 发冷乘客
+    start: 0
+    max: 3
+    failAt: 3
+    mode: up
+    failText: 发冷的乘客到了 3 个。
+waves:
+  - at: 0.35
+    actors:
+      - id: sui-1
+        label: 细祟
+        kind: sui
+        hp: 24
+        speed: 340
+        path: [door-bottom-seam, center]
+        onArrive: cold
+  - at: 1.2
+    actors:
+      - id: sui-2
+        label: 细祟
+        kind: sui
+        hp: 24
+        speed: 340
+        path: [door-seam, center]
+        onArrive: cold
+  - at: 1.9
+    actors:
+      - id: sui-3
+        label: 细祟
+        kind: sui
+        hp: 24
+        speed: 320
+        path: [floor-panel, center]
+        onArrive: cold
+  - at: 2.8
+    actors:
+      - id: boss-slag
+        label: 厚重鬼渣
+        kind: sui
+        hp: 78
+        speed: 210
+        path: [door-bottom-seam, center]
+        onArrive: cold
+intro:
+  image: res://assets/stills/level-01.png
+  lines:
+    - "锦华苑电梯。鬼渣从门缝往广告屏上爬。"
+    - "老周：符贴门下缝。符力自己会回。人进来把符踢掉，你再补一张。"
+outro:
+  image: res://assets/stills/level-01.png
+  lines:
+    - "鬼渣散了。差不多得了，早点交班。"

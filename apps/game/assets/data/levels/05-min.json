@@ -1,0 +1,172 @@
+{
+  "id": "level-05",
+  "title": "第5关 · 按住老闵",
+  "goal": "机位A贴驱离让老闵绕路，切到机位B定神，再召唤阴差。别打碎他。",
+  "regenRate": 48,
+  "placeCost": 8,
+  "lightningCost": 6,
+  "wardDamagePerSecond": 70,
+  "lightningDamage": 60,
+  "failThreshold": 3,
+  "initialEnergy": 100,
+  "energyMax": 100,
+  "cameraMode": "multi",
+  "winKind": "summon",
+  "tools": [
+    "redirect",
+    "hold",
+    "lightning",
+    "tear",
+    "summon"
+  ],
+  "bg": [
+    0.11,
+    0.12,
+    0.12
+  ],
+  "hotspots": [
+    {
+      "id": "ring",
+      "label": "环线",
+      "x": 380,
+      "y": 400,
+      "role": "env",
+      "camera": "A"
+    },
+    {
+      "id": "fork",
+      "label": "岔口",
+      "x": 760,
+      "y": 400,
+      "role": "env",
+      "camera": "A",
+      "accepts": [
+        "redirect",
+        "tear"
+      ],
+      "redirectTo": [
+        "handoff"
+      ],
+      "redirectArrive": "park"
+    },
+    {
+      "id": "escape",
+      "label": "出口",
+      "x": 1180,
+      "y": 280,
+      "role": "env",
+      "camera": "A"
+    },
+    {
+      "id": "low-sui",
+      "label": "低洼",
+      "x": 380,
+      "y": 700,
+      "role": "env",
+      "camera": "A",
+      "accepts": [
+        "hold",
+        "tear"
+      ]
+    },
+    {
+      "id": "ground",
+      "label": "地面引雷",
+      "x": 760,
+      "y": 700,
+      "role": "ground",
+      "camera": "A",
+      "accepts": [
+        "lightning"
+      ],
+      "lightningHits": [
+        "min"
+      ]
+    },
+    {
+      "id": "handoff",
+      "label": "交接区",
+      "x": 1180,
+      "y": 640,
+      "role": "env",
+      "camera": "B",
+      "accepts": [
+        "hold",
+        "tear"
+      ]
+    }
+  ],
+  "spirit": {
+    "id": "min",
+    "maxHp": 80,
+    "moveDurationSec": 4,
+    "entryHotspotId": "ring"
+  },
+  "meters": [
+    {
+      "id": "tide",
+      "label": "低洼细潮",
+      "start": 0,
+      "max": 3,
+      "failAt": 3,
+      "mode": "up",
+      "failText": "低洼的祟灌进交接区了。"
+    }
+  ],
+  "waves": [
+    {
+      "at": 0.25,
+      "actors": [
+        {
+          "id": "sui-low",
+          "label": "细祟",
+          "kind": "sui",
+          "hp": 30,
+          "speed": 40,
+          "path": [
+            "low-sui"
+          ],
+          "onArrive": "park",
+          "mustResolve": false
+        }
+      ]
+    },
+    {
+      "at": 0.3,
+      "actors": [
+        {
+          "id": "min",
+          "label": "老闵",
+          "kind": "named",
+          "hp": 80,
+          "speed": 200,
+          "path": [
+            "ring",
+            "fork",
+            "escape"
+          ],
+          "onArrive": "escape",
+          "escapeText": "老闵冲出交接区了。",
+          "named": true,
+          "redirectable": true,
+          "fragile": true,
+          "mustResolve": false,
+          "damageable": false
+        }
+      ]
+    }
+  ],
+  "intro": {
+    "image": "res://assets/stills/level-05.png",
+    "lines": [
+      "废旧停车场。阴差堵在路上，先把老闵按住。",
+      "这关要切监控。驱离在环线，定神在交接亭。两路不在同一张画面里。"
+    ]
+  },
+  "outro": {
+    "image": "res://assets/stills/level-05.png",
+    "lines": [
+      "阴差：交班了，走吧。没打碎，记你们一笔。"
+    ]
+  }
+}

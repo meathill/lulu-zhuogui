@@ -5,7 +5,7 @@ config_version=5
 
 config/name="路路捉鬼"
 config/description="临江市民俗事务服务中心调度系统"
-run/main_scene="res://scenes/levels/level_01.tscn"
+run/main_scene="res://scenes/menu/level_select.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 config/icon="res://icon.svg"
 run/max_fps=60

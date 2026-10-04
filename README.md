@@ -58,5 +58,5 @@ pnpm build:data
 pnpm dev:game
 ```
 
-第 1 关从 `scenes/levels/level_01.tscn` 进。点门下缝贴符，符力自己回；鬼渣血量归零过关，发冷乘客到 3 时老周劝退。进度见 [WIP.md](WIP.md)。
+启动后是选关。第 1–10 关灰盒可玩：符贴在环境位点上，五雷扔地上。网页包关闭线程，方便静态托管。进度见 [WIP.md](WIP.md)。
 

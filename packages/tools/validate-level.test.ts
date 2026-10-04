@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { parse } from "yaml"
@@ -35,6 +35,57 @@ describe("关卡校验", () => {
     const result = readLevel(parse(source))
     expect(result.issues).toEqual([])
     expect(result.level?.id).toBe("level-01")
-    expect(result.level?.hotspots.map((hotspot) => hotspot.id)).toEqual(["door-bottom-seam"])
+    expect(result.level?.hotspots.map((hotspot) => hotspot.id)).toEqual([
+      "door-bottom-seam",
+      "door-seam",
+      "floor-panel",
+      "center",
+    ])
+  })
+
+  it("十关都能过校验，且守住符位规则", () => {
+    const names = readdirSync(resolve(here, "../gamedata/levels")).filter((name) => name.endsWith(".yaml")).sort()
+    expect(names).toHaveLength(10)
+    const multi: string[] = []
+    for (const name of names) {
+      const raw = parse(readFileSync(resolve(here, "../gamedata/levels", name), "utf8")) as {
+        id: string
+        cameraMode: string
+        tools: string[]
+        winKind: string
+        waves: { actors: { kind: string }[] }[]
+        hotspots: { role?: string; accepts?: string[] }[]
+      }
+      const result = readLevel(raw)
+      expect(result.issues, name).toEqual([])
+      expect(result.level?.id).toBe(raw.id)
+      expect(raw.tools).not.toContain("安神")
+      expect(raw.tools).not.toContain("anshen")
+      if (raw.cameraMode === "multi") {
+        multi.push(raw.id)
+      }
+      for (const hotspot of raw.hotspots) {
+        if (hotspot.accepts?.includes("lightning")) {
+          expect(hotspot.role).toBe("ground")
+        }
+        if (hotspot.role === "body") {
+          expect(hotspot.accepts ?? []).toEqual(["reveal"])
+        }
+      }
+    }
+    expect(multi).toEqual(["level-05"])
+    const level8 = parse(readFileSync(resolve(here, "../gamedata/levels/08-xiahe.yaml"), "utf8")) as {
+      waves: { actors: { kind: string }[] }[]
+    }
+    const kinds = level8.waves.flatMap((wave) => wave.actors.map((actor) => actor.kind))
+    expect(kinds).not.toContain("dog")
+    const level9 = parse(readFileSync(resolve(here, "../gamedata/levels/09-carport.yaml"), "utf8")) as {
+      tools: string[]
+    }
+    expect(level9.tools).toEqual(["ward", "tear"])
+    const level10 = parse(readFileSync(resolve(here, "../gamedata/levels/10-bedroom.yaml"), "utf8")) as {
+      winKind: string
+    }
+    expect(level10.winKind).toBe("boss")
   })
 })

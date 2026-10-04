@@ -1,0 +1,154 @@
+{
+  "id": "level-08",
+  "title": "第8关 · 狗牌 · 找林小禾",
+  "goal": "布丁不在这。点开书包看狗牌，听完林小禾三句话，镇守护住巷口。",
+  "regenRate": 48,
+  "placeCost": 8,
+  "lightningCost": 6,
+  "wardDamagePerSecond": 70,
+  "lightningDamage": 60,
+  "failThreshold": 3,
+  "initialEnergy": 100,
+  "energyMax": 100,
+  "cameraMode": "single",
+  "winKind": "backpack",
+  "tools": [
+    "ward",
+    "tear"
+  ],
+  "bg": [
+    0.11,
+    0.12,
+    0.13
+  ],
+  "hotspots": [
+    {
+      "id": "lane",
+      "label": "人行道",
+      "x": 460,
+      "y": 520,
+      "role": "env",
+      "camera": "A"
+    },
+    {
+      "id": "path-a",
+      "label": "护林镇守",
+      "x": 860,
+      "y": 520,
+      "role": "env",
+      "camera": "A",
+      "accepts": [
+        "ward",
+        "tear"
+      ]
+    },
+    {
+      "id": "alley",
+      "label": "巷口",
+      "x": 1280,
+      "y": 560,
+      "role": "env",
+      "camera": "A",
+      "accepts": [
+        "ward",
+        "tear"
+      ]
+    },
+    {
+      "id": "backpack",
+      "label": "小禾书包",
+      "x": 460,
+      "y": 740,
+      "role": "backpack",
+      "camera": "A"
+    }
+  ],
+  "spirit": {
+    "id": "sui-1",
+    "maxHp": 22,
+    "moveDurationSec": 4,
+    "entryHotspotId": "lane"
+  },
+  "meters": [
+    {
+      "id": "fear",
+      "label": "小禾惧值",
+      "start": 0,
+      "max": 3,
+      "failAt": 3,
+      "mode": "up",
+      "failText": "小禾吓得跑回家了。"
+    }
+  ],
+  "waves": [
+    {
+      "at": 0.4,
+      "actors": [
+        {
+          "id": "sui-1",
+          "label": "细祟",
+          "kind": "sui",
+          "hp": 22,
+          "speed": 240,
+          "path": [
+            "lane",
+            "path-a"
+          ],
+          "onArrive": "fear"
+        }
+      ]
+    },
+    {
+      "at": 1,
+      "actors": [
+        {
+          "id": "sui-2",
+          "label": "细祟",
+          "kind": "sui",
+          "hp": 22,
+          "speed": 240,
+          "path": [
+            "lane",
+            "alley"
+          ],
+          "onArrive": "fear"
+        }
+      ]
+    },
+    {
+      "at": 1.6,
+      "actors": [
+        {
+          "id": "sui-3",
+          "label": "细祟",
+          "kind": "sui",
+          "hp": 22,
+          "speed": 240,
+          "path": [
+            "lane",
+            "path-a"
+          ],
+          "onArrive": "fear"
+        }
+      ]
+    }
+  ],
+  "dialogue": [
+    "林小禾：好黑啊，要是布丁在就好了……",
+    "林小禾：以前布丁都会来接我放学……要是我那天不磨蹭，它也不会出事了……",
+    "林小禾：布丁你放心，我会勇敢起来的！"
+  ],
+  "intro": {
+    "image": "res://assets/stills/level-08.png",
+    "lines": [
+      "学府路。布丁不在这条路上。先看她书包上的挂饰。",
+      "老周：晚自习下课，别一个人往黑巷里钻。符贴巷口两侧。"
+    ]
+  },
+  "outro": {
+    "image": "res://assets/stills/level-08.png",
+    "lines": [
+      "牌子对上了。下一单是空车棚的影子，再往后是她的房间。"
+    ]
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "id": "level-06",
+  "title": "第6关 · 即将成型的灵",
+  "goal": "镇守挡住杂潮，等成型条满，定神稳住，召唤阴差送去投胎。单机位。",
+  "regenRate": 48,
+  "placeCost": 8,
+  "lightningCost": 6,
+  "wardDamagePerSecond": 70,
+  "lightningDamage": 60,
+  "failThreshold": 3,
+  "initialEnergy": 100,
+  "energyMax": 100,
+  "cameraMode": "single",
+  "winKind": "form-send",
+  "tools": [
+    "ward",
+    "hold",
+    "tear",
+    "summon"
+  ],
+  "formStart": 40,
+  "bg": [
+    0.1,
+    0.12,
+    0.14
+  ],
+  "hotspots": [
+    {
+      "id": "mouth",
+      "label": "巷缝",
+      "x": 480,
+      "y": 500,
+      "role": "env",
+      "camera": "A"
+    },
+    {
+      "id": "debris-gate",
+      "label": "井篦",
+      "x": 1180,
+      "y": 360,
+      "role": "env",
+      "camera": "A",
+      "accepts": [
+        "ward",
+        "tear"
+      ]
+    },
+    {
+      "id": "circle",
+      "label": "成型圈",
+      "x": 860,
+      "y": 640,
+      "role": "env",
+      "camera": "A",
+      "accepts": [
+        "hold",
+        "tear"
+      ]
+    }
+  ],
+  "spirit": {
+    "id": "fragment",
+    "maxHp": 10,
+    "moveDurationSec": 4,
+    "entryHotspotId": "mouth"
+  },
+  "meters": [
+    {
+      "id": "noise",
+      "label": "杂潮",
+      "start": 0,
+      "max": 3,
+      "failAt": 3,
+      "mode": "up",
+      "failText": "杂潮把天井灌满了。"
+    }
+  ],
+  "waves": [
+    {
+      "at": 1.2,
+      "actors": [
+        {
+          "id": "frag-1",
+          "label": "魂碎片",
+          "kind": "fragment",
+          "hp": 10,
+          "speed": 260,
+          "payload": 40,
+          "path": [
+            "mouth",
+            "circle"
+          ],
+          "onArrive": "form",
+          "mustResolve": false,
+          "damageable": false
+        }
+      ]
+    },
+    {
+      "at": 0.2,
+      "actors": [
+        {
+          "id": "debris-1",
+          "label": "杂潮",
+          "kind": "debris",
+          "hp": 24,
+          "speed": 420,
+          "payload": 55,
+          "path": [
+            "debris-gate",
+            "circle"
+          ],
+          "onArrive": "form-hit"
+        }
+      ]
+    },
+    {
+      "at": 2.1,
+      "actors": [
+        {
+          "id": "frag-2",
+          "label": "魂碎片",
+          "kind": "fragment",
+          "hp": 10,
+          "speed": 260,
+          "payload": 40,
+          "path": [
+            "mouth",
+            "circle"
+          ],
+          "onArrive": "form",
+          "mustResolve": false,
+          "damageable": false
+        }
+      ]
+    }
+  ],
+  "intro": {
+    "image": "res://assets/stills/level-06.png",
+    "lines": [
+      "滨河天井。一缕快成型的灵在捡碎光，别打碎她。",
+      "老周：碎片引进圈里，定神稳住，阴差窗口开了就送去投胎。"
+    ]
+  },
+  "outro": {
+    "image": "res://assets/stills/level-06.png",
+    "lines": [
+      "成型完好。阴差把她带走了。芮姐在群里丢下一句：看见红鞋就退。"
+    ]
+  }
+}

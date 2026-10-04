@@ -1,0 +1,83 @@
+id: level-09
+title: 第9关 · 空车棚 · 试探的影子
+goal: 空车棚里没有人。镇守清潮，撕符把粘在影子裙边上的祟撕开。这里没有安神。
+regenRate: 48
+placeCost: 8
+lightningCost: 6
+wardDamagePerSecond: 70
+lightningDamage: 60
+failThreshold: 3
+initialEnergy: 100
+energyMax: 100
+cameraMode: single
+winKind: clear
+tools: [ward, tear]
+bg: [0.1, 0.1, 0.12]
+hotspots:
+  - id: column
+    label: 柱根
+    x: 700
+    y: 540
+    role: env
+    camera: A
+    accepts: [tear]
+  - id: pillar
+    label: 柱间地面
+    x: 1120
+    y: 540
+    role: env
+    camera: A
+    accepts: [ward, tear]
+  - id: drain
+    label: 地锁沟
+    x: 700
+    y: 760
+    role: env
+    camera: A
+    accepts: [tear]
+spirit:
+  id: skirt
+  maxHp: 30
+  moveDurationSec: 4
+  entryHotspotId: column
+meters:
+  - id: probe
+    label: 影子试探
+    start: 0
+    max: 100
+    failAt: 100
+    mode: up
+    failText: 影子试探叠满了，它找到更暖的门。
+    perSecond: 32
+    whileAttached: any
+waves:
+  - at: 0.3
+    actors:
+      - id: shadow
+        label: 人高影子
+        kind: shadow
+        hp: 40
+        speed: 30
+        path: [column]
+        onArrive: park
+        mustResolve: false
+        damageable: false
+      - id: skirt
+        label: 裙边祟
+        kind: sui
+        hp: 28
+        speed: 220
+        path: [column]
+        clingTo: shadow
+        afterTearPath: [pillar]
+        attached: true
+        damageable: false
+intro:
+  image: res://assets/stills/level-09.png
+  lines:
+    - "空车棚。画面里只有柱子、积水和一团人高的影子。"
+    - "老周：符贴柱脚。粘在影子边上的祟，撕开再镇。别找安神，这关没有。"
+outro:
+  image: res://assets/stills/level-09.png
+  lines:
+    - "潮退了。它找到更暖的门——楼上二单元，小禾的卧室。"
