@@ -99,7 +99,7 @@
   "spirit": {
     "id": "min",
     "maxHp": 80,
-    "moveDurationSec": 4,
+    "moveDurationSec": 18,
     "entryHotspotId": "ring"
   },
   "meters": [
@@ -115,13 +115,13 @@
   ],
   "waves": [
     {
-      "at": 0.25,
+      "at": 0.4,
       "actors": [
         {
           "id": "sui-low",
           "label": "细祟",
           "kind": "sui",
-          "hp": 30,
+          "hp": 140,
           "speed": 40,
           "path": [
             "low-sui"
@@ -132,14 +132,52 @@
       ]
     },
     {
-      "at": 0.3,
+      "at": 3,
+      "actors": [
+        {
+          "id": "tide-1",
+          "label": "细潮",
+          "kind": "sui",
+          "hp": 120,
+          "speed": 55,
+          "path": [
+            "ring",
+            "fork",
+            "escape"
+          ],
+          "onArrive": "tide",
+          "mustResolve": false
+        }
+      ]
+    },
+    {
+      "at": 75,
+      "actors": [
+        {
+          "id": "tide-2",
+          "label": "细潮",
+          "kind": "sui",
+          "hp": 120,
+          "speed": 55,
+          "path": [
+            "ring",
+            "fork",
+            "escape"
+          ],
+          "onArrive": "tide",
+          "mustResolve": false
+        }
+      ]
+    },
+    {
+      "at": 176,
       "actors": [
         {
           "id": "min",
           "label": "老闵",
           "kind": "named",
           "hp": 80,
-          "speed": 200,
+          "speed": 46,
           "path": [
             "ring",
             "fork",

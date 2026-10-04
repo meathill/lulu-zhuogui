@@ -15,6 +15,7 @@ signal menu_pressed
 var _energy: Label
 var _meters: Label
 var _status: Label
+var _clock: Label
 var _zhou: Label
 var _dialogue: Label
 var _end: Label
@@ -29,6 +30,9 @@ func build(title: String, goal: String, tools: PackedStringArray, multi_camera: 
 	add_child(root)
 	var top := _panel(root, 0, 0, 1920, 168)
 	_label(top, title, 16, 8, 28)
+	_clock = _label(top, "时间 00:00  波次 0/0", 1180, 10, 22)
+	_clock.size = Vector2(700, 36)
+	_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_label(top, goal, 16, 44, 22)
 	_meters = _label(top, "", 16, 78, 20)
 	_energy = _label(top, "", 16, 108, 20)
@@ -82,6 +86,11 @@ func set_meters(text: String) -> void:
 
 func set_status(text: String) -> void:
 	_status.text = text
+
+
+func set_clock(text: String) -> void:
+	if _clock != null:
+		_clock.text = text
 
 
 func set_zhou(text: String) -> void:

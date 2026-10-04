@@ -65,8 +65,8 @@
   ],
   "spirit": {
     "id": "sui-1",
-    "maxHp": 22,
-    "moveDurationSec": 4,
+    "maxHp": 140,
+    "moveDurationSec": 12,
     "entryHotspotId": "lane"
   },
   "meters": [
@@ -82,14 +82,14 @@
   ],
   "waves": [
     {
-      "at": 0.4,
+      "at": 6,
       "actors": [
         {
           "id": "sui-1",
           "label": "细祟",
           "kind": "sui",
-          "hp": 22,
-          "speed": 240,
+          "hp": 140,
+          "speed": 34,
           "path": [
             "lane",
             "path-a"
@@ -99,14 +99,14 @@
       ]
     },
     {
-      "at": 1,
+      "at": 85,
       "actors": [
         {
           "id": "sui-2",
           "label": "细祟",
           "kind": "sui",
-          "hp": 22,
-          "speed": 240,
+          "hp": 140,
+          "speed": 42,
           "path": [
             "lane",
             "alley"
@@ -116,14 +116,14 @@
       ]
     },
     {
-      "at": 1.6,
+      "at": 280,
       "actors": [
         {
           "id": "sui-3",
           "label": "细祟",
           "kind": "sui",
-          "hp": 22,
-          "speed": 240,
+          "hp": 160,
+          "speed": 34,
           "path": [
             "lane",
             "path-a"

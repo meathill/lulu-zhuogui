@@ -52,7 +52,7 @@ hotspots:
 spirit:
   id: core
   maxHp: 100
-  moveDurationSec: 4
+  moveDurationSec: 17
   entryHotspotId: zebra
 meters:
   - id: offering
@@ -63,60 +63,54 @@ meters:
     mode: up
     failText: 三块面包三只烟凑满了，香炉喂饱了。
 waves:
-  - at: 0.4
+  - at: 4
     actors:
       - id: core
         label: 附身核
         kind: core
         hp: 100
-        speed: 78
+        speed: 20
         path: [zebra, censer]
         onArrive: offering
         wardImmune: true
         immuneUntilReveal: true
-  - at: 0.45
-    actors:
       - id: wisp-1
         label: 游离祟
         kind: sui
-        hp: 20
-        speed: 260
+        hp: 120
+        speed: 26
         path: [zebra, censer]
         onArrive: offering
-  - at: 0.9
+  - at: 68
     actors:
       - id: wisp-2
         label: 游离祟
         kind: sui
-        hp: 20
-        speed: 260
+        hp: 120
+        speed: 26
         path: [door-seam, censer]
         onArrive: offering
-  - at: 1.4
-    actors:
       - id: wisp-3
         label: 游离祟
         kind: sui
-        hp: 20
-        speed: 260
+        hp: 120
+        speed: 26
         path: [zebra, censer]
         onArrive: offering
-  - at: 1.9
+  - at: 185
     actors:
       - id: wisp-4
         label: 游离祟
         kind: sui
-        hp: 20
-        speed: 260
+        hp: 140
+        speed: 26
         path: [door-seam, censer]
         onArrive: offering
-  - at: 2.4
-    actors:
       - id: wisp-5
         label: 游离祟
         kind: sui
-        hp: 20
-        speed: 260
+        hp: 140
+        speed: 26
         path: [zebra, censer]
         onArrive: offering
 intro:

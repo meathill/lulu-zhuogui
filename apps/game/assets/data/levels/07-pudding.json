@@ -81,32 +81,66 @@
   "spirit": {
     "id": "pudding",
     "maxHp": 80,
-    "moveDurationSec": 4,
+    "moveDurationSec": 15,
     "entryHotspotId": "flower"
   },
   "meters": [
     {
       "id": "yang",
       "label": "步道阳气",
-      "start": 100,
-      "max": 100,
+      "start": 3,
+      "max": 3,
       "failAt": 0,
       "mode": "down",
-      "failText": "步道阳气被啃光了。",
-      "perSecond": -36,
-      "whileAttached": "pudding"
+      "failText": "步道阳气被啃光了。"
     }
   ],
   "waves": [
     {
-      "at": 0.25,
+      "at": 5,
+      "actors": [
+        {
+          "id": "nip-1",
+          "label": "啃阳祟",
+          "kind": "sui",
+          "hp": 120,
+          "speed": 40,
+          "path": [
+            "flower",
+            "out"
+          ],
+          "onArrive": "yang",
+          "mustResolve": false
+        }
+      ]
+    },
+    {
+      "at": 100,
+      "actors": [
+        {
+          "id": "nip-2",
+          "label": "啃阳祟",
+          "kind": "sui",
+          "hp": 120,
+          "speed": 40,
+          "path": [
+            "flower",
+            "out"
+          ],
+          "onArrive": "yang",
+          "mustResolve": false
+        }
+      ]
+    },
+    {
+      "at": 300,
       "actors": [
         {
           "id": "pudding",
           "label": "布丁",
           "kind": "dog",
           "hp": 80,
-          "speed": 240,
+          "speed": 34,
           "path": [
             "flower",
             "out"
@@ -123,7 +157,7 @@
           "id": "clump",
           "label": "粘祟",
           "kind": "sui",
-          "hp": 20,
+          "hp": 140,
           "speed": 40,
           "path": [
             "flower"

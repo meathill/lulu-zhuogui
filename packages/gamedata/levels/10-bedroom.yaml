@@ -52,46 +52,52 @@ hotspots:
 spirit:
   id: nightmare
   maxHp: 160
-  moveDurationSec: 4
+  moveDurationSec: 14
   entryHotspotId: door-seam
 meters:
   - id: fear
     label: 小禾惧值
     start: 0
-    max: 100
-    failAt: 100
+    max: 3
+    failAt: 3
     mode: up
     failText: 小禾被梦魇缠住，醒不过来了。
-    perSecond: 12
 waves:
-  - at: 0.3
-    actors:
-      - id: nightmare
-        label: 梦魇
-        kind: boss
-        hp: 160
-        speed: 150
-        path: [door-seam, bed]
-        onArrive: park
-        wardImmune: true
-  - at: 0.6
+  - at: 7
     actors:
       - id: seep-1
         label: 渗入祟
         kind: sui
-        hp: 22
-        speed: 200
+        hp: 140
+        speed: 26
         path: [inlet, window]
         onArrive: fear
-  - at: 1.2
+  - at: 95
     actors:
       - id: seep-2
         label: 渗入祟
         kind: sui
-        hp: 22
-        speed: 200
+        hp: 140
+        speed: 36
         path: [door-seam, bed]
         onArrive: fear
+  - at: 300
+    actors:
+      - id: seep-3
+        label: 渗入祟
+        kind: sui
+        hp: 160
+        speed: 26
+        path: [inlet, window]
+        onArrive: fear
+      - id: nightmare
+        label: 梦魇
+        kind: boss
+        hp: 160
+        speed: 32
+        path: [door-seam, bed]
+        onArrive: park
+        wardImmune: true
 intro:
   image: res://assets/stills/level-10.png
   lines:

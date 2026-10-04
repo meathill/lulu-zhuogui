@@ -72,8 +72,8 @@
   ],
   "spirit": {
     "id": "cry",
-    "maxHp": 70,
-    "moveDurationSec": 4,
+    "maxHp": 280,
+    "moveDurationSec": 24,
     "entryHotspotId": "bath-door"
   },
   "meters": [
@@ -89,14 +89,14 @@
   ],
   "waves": [
     {
-      "at": 0.3,
+      "at": 1.5,
       "actors": [
         {
           "id": "leak-1",
           "label": "地漏祟",
           "kind": "sui",
-          "hp": 22,
-          "speed": 300,
+          "hp": 140,
+          "speed": 50,
           "path": [
             "bath-door",
             "hall",
@@ -107,14 +107,14 @@
       ]
     },
     {
-      "at": 1,
+      "at": 72,
       "actors": [
         {
           "id": "leak-2",
           "label": "门缝祟",
           "kind": "sui",
-          "hp": 22,
-          "speed": 300,
+          "hp": 140,
+          "speed": 50,
           "path": [
             "hall",
             "room-door"
@@ -124,14 +124,14 @@
       ]
     },
     {
-      "at": 1.7,
+      "at": 175,
       "actors": [
         {
           "id": "cry",
           "label": "哭声团",
           "kind": "sui",
-          "hp": 70,
-          "speed": 180,
+          "hp": 280,
+          "speed": 38,
           "path": [
             "bath-door",
             "hall",

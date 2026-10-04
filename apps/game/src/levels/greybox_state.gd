@@ -33,6 +33,9 @@ var kick_slot: String = ""
 var kick_at: float = -1.0
 var win_text: String = ""
 var dialogue: PackedStringArray = PackedStringArray()
+var outro_lines: PackedStringArray = PackedStringArray()
+var outro_image: String = ""
+var showing_outro: bool = false
 
 var energy := EnergyPool.new()
 var redirect := RedirectField.new()
@@ -65,6 +68,7 @@ func _ready() -> void:
 	cutscene.finished.connect(_on_cutscene_done)
 	if level_id == "level-10":
 		_read_assist()
+	_apply_time_scale()
 	if auto_mode == "win":
 		policy = POLICY.new()
 		policy.set("level", self)
@@ -81,8 +85,26 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if ended != "" or paused:
 		return
+	# 单帧最多推进 0.1 玩家秒，避免无头加速时一帧跨过整段路程。
+	var remaining := delta
+	while remaining > 0.000001 and ended == "":
+		var step := minf(remaining, 0.1)
+		remaining -= step
+		_tick(step)
+		if auto_mode == "ward" and ended == "" and time_sec >= 65.0:
+			print("TIME %.2f" % time_sec)
+			print("RESULT hold")
+			_quit(0)
+			return
+	if ended == "":
+		_refresh()
+
+
+func _tick(delta: float) -> void:
 	time_sec += delta
 	energy.tick(delta)
+	if auto_mode == "ward":
+		call("try_place", "ward", "door-bottom-seam")
 	call("_kick")
 	call("_spawn_due")
 	if policy != null:
@@ -97,11 +119,11 @@ func _process(delta: float) -> void:
 		_fail(broke)
 		return
 	_check_win()
-	if auto_mode != "" and ended == "" and time_sec > 20.0:
+	# 520 玩家秒还没分出胜负才算卡死。无头可以用 time_scale 压缩墙钟，这里仍按玩家秒计。
+	if auto_mode != "" and ended == "" and time_sec > 520.0:
+		print("TIME %.2f" % time_sec)
 		print("RESULT timeout")
 		_quit(1)
-		return
-	_refresh()
 
 
 func _auto_arg() -> String:
@@ -110,7 +132,18 @@ func _auto_arg() -> String:
 		return "win"
 	if args.has("--auto-fail"):
 		return "fail"
+	if args.has("--auto-ward"):
+		return "ward"
 	return ""
+
+
+func _apply_time_scale() -> void:
+	# 只给无头自测用。玩家秒仍是 time_sec；墙钟约为玩家秒 / time_scale。
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--time-scale="):
+			var scale := float(arg.trim_prefix("--time-scale="))
+			if scale > 0.0:
+				Engine.time_scale = scale
 
 
 func _load_data() -> Dictionary:
@@ -134,6 +167,8 @@ func _apply_config(data: Dictionary) -> void:
 	kick_slot = str(data.get("kickSlot", ""))
 	kick_at = float(data.get("kickAt", -1))
 	form = float(data.get("formStart", 0))
+	outro_lines = _lines(data.get("outro", {}))
+	outro_image = _image(data.get("outro", {}))
 	win_text = _first_line(data.get("outro", {}))
 	dialogue = _lines(data.get("dialogue", []))
 	var tools := _strings(data.get("tools", []))
@@ -198,6 +233,7 @@ func _fail(reason: String) -> void:
 	ended = "fail"
 	status_text = reason
 	var zhou := "老周：今天先到这儿吧，我去问问那谁有没有空。"
+	print("TIME %.2f" % time_sec)
 	print("RESULT fail")
 	print(reason)
 	if auto_mode == "win":
@@ -206,6 +242,14 @@ func _fail(reason: String) -> void:
 		return
 	if auto_mode == "fail":
 		_quit(0)
+		return
+	if auto_mode == "ward":
+		if time_sec < 60.0:
+			print("RESULT early-fail")
+			_quit(1)
+		else:
+			print("RESULT hold")
+			_quit(0)
 		return
 	if hud != null:
 		hud.set_zhou(zhou)
@@ -217,6 +261,7 @@ func _win(text: String) -> void:
 		return
 	ended = "win"
 	status_text = text
+	print("TIME %.2f" % time_sec)
 	print("RESULT win")
 	print(text)
 	if auto_mode == "fail":
@@ -225,6 +270,14 @@ func _win(text: String) -> void:
 		return
 	if auto_mode == "win":
 		_quit(0)
+		return
+	if auto_mode == "ward":
+		print("RESULT hold")
+		_quit(0)
+		return
+	if outro_lines.size() > 0 and cutscene != null:
+		showing_outro = true
+		cutscene.play(outro_image, outro_lines)
 		return
 	if hud != null:
 		hud.show_end(text)
@@ -284,6 +337,7 @@ func _refresh() -> void:
 	hud.set_energy(ward)
 	hud.set_meters("  ".join(meters.lines()))
 	hud.set_status(status_text)
+	hud.set_clock(_clock_text())
 	if dialogue.size() > 0 and lines_seen == 0:
 		hud.set_dialogue("点「下一句」听林小禾说话。")
 	elif lines_seen > 0:
@@ -309,8 +363,31 @@ func _tool_name(tool_id: String) -> String:
 
 
 func _on_cutscene_done() -> void:
+	if showing_outro:
+		showing_outro = false
+		if hud != null:
+			hud.show_end(status_text)
+		return
 	paused = false
 	time_sec = 0.0
+
+
+func _clock_text() -> String:
+	var total := int(time_sec)
+	var spawned := 0
+	var next_at := -1.0
+	for wave in waves:
+		if bool(wave["done"]):
+			spawned += 1
+		elif next_at < 0.0:
+			next_at = float(wave["at"])
+	var text := "时间 %02d:%02d  波次 %d/%d" % [total / 60, total % 60, spawned, waves.size()]
+	if next_at >= 0.0:
+		var left := int(ceili(next_at - time_sec))
+		if left < 0:
+			left = 0
+		text += "  下一波 %d 秒" % left
+	return text
 
 
 func _strings(value: Variant) -> PackedStringArray:

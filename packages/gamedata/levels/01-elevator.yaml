@@ -13,7 +13,7 @@ cameraMode: single
 winKind: clear
 tools: [ward, tear]
 kickSlot: door-bottom-seam
-kickAt: 1.05
+kickAt: 100
 bg: [0.12, 0.13, 0.16]
 hotspots:
   - id: door-bottom-seam
@@ -45,8 +45,8 @@ hotspots:
     camera: A
 spirit:
   id: thick-slag
-  maxHp: 80
-  moveDurationSec: 4
+  maxHp: 420
+  moveDurationSec: 9
   entryHotspotId: door-bottom-seam
 meters:
   - id: cold
@@ -57,40 +57,38 @@ meters:
     mode: up
     failText: 发冷的乘客到了 3 个。
 waves:
-  - at: 0.35
+  - at: 11
     actors:
       - id: sui-1
         label: 细祟
         kind: sui
-        hp: 24
-        speed: 340
+        hp: 140
+        speed: 36
         path: [door-bottom-seam, center]
         onArrive: cold
-  - at: 1.2
+  - at: 64
     actors:
       - id: sui-2
         label: 细祟
         kind: sui
-        hp: 24
-        speed: 340
+        hp: 140
+        speed: 36
         path: [door-seam, center]
         onArrive: cold
-  - at: 1.9
+  - at: 180
     actors:
       - id: sui-3
         label: 细祟
         kind: sui
-        hp: 24
-        speed: 320
+        hp: 160
+        speed: 36
         path: [floor-panel, center]
         onArrive: cold
-  - at: 2.8
-    actors:
       - id: boss-slag
         label: 厚重鬼渣
         kind: sui
-        hp: 78
-        speed: 210
+        hp: 420
+        speed: 28
         path: [door-bottom-seam, center]
         onArrive: cold
 intro:

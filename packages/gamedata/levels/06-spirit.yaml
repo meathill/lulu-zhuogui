@@ -38,7 +38,7 @@ hotspots:
 spirit:
   id: fragment
   maxHp: 10
-  moveDurationSec: 4
+  moveDurationSec: 8
   entryHotspotId: mouth
 meters:
   - id: noise
@@ -49,40 +49,58 @@ meters:
     mode: up
     failText: 杂潮把天井灌满了。
 waves:
-  - at: 1.2
+  - at: 6
+    actors:
+      - id: debris-1
+        label: 杂潮
+        kind: debris
+        hp: 210
+        speed: 42
+        payload: 15
+        path: [debris-gate, circle]
+        onArrive: form-hit
+  - at: 48
     actors:
       - id: frag-1
         label: 魂碎片
         kind: fragment
         hp: 10
-        speed: 260
-        payload: 40
+        speed: 50
+        payload: 30
         path: [mouth, circle]
         onArrive: form
         mustResolve: false
         damageable: false
-  - at: 0.2
+  - at: 100
     actors:
-      - id: debris-1
+      - id: debris-2
         label: 杂潮
         kind: debris
-        hp: 24
-        speed: 420
-        payload: 55
+        hp: 210
+        speed: 42
+        payload: 20
         path: [debris-gate, circle]
         onArrive: form-hit
-  - at: 2.1
+  - at: 182
     actors:
       - id: frag-2
         label: 魂碎片
         kind: fragment
         hp: 10
-        speed: 260
-        payload: 40
+        speed: 50
+        payload: 30
         path: [mouth, circle]
         onArrive: form
         mustResolve: false
         damageable: false
+      - id: debris-3
+        label: 杂潮
+        kind: debris
+        hp: 280
+        speed: 42
+        payload: 90
+        path: [debris-gate, circle]
+        onArrive: form-hit
 intro:
   image: res://assets/stills/level-06.png
   lines:

@@ -37,21 +37,19 @@ hotspots:
     accepts: [tear]
 spirit:
   id: skirt
-  maxHp: 30
-  moveDurationSec: 4
+  maxHp: 160
+  moveDurationSec: 12
   entryHotspotId: column
 meters:
   - id: probe
     label: 影子试探
     start: 0
-    max: 100
-    failAt: 100
+    max: 3
+    failAt: 3
     mode: up
     failText: 影子试探叠满了，它找到更暖的门。
-    perSecond: 32
-    whileAttached: any
 waves:
-  - at: 0.3
+  - at: 6
     actors:
       - id: shadow
         label: 人高影子
@@ -65,13 +63,38 @@ waves:
       - id: skirt
         label: 裙边祟
         kind: sui
-        hp: 28
-        speed: 220
+        hp: 160
+        speed: 35
         path: [column]
         clingTo: shadow
         afterTearPath: [pillar]
         attached: true
         damageable: false
+      - id: probe-1
+        label: 试探祟
+        kind: sui
+        hp: 120
+        speed: 35
+        path: [column, pillar]
+        onArrive: probe
+  - at: 110
+    actors:
+      - id: probe-2
+        label: 试探祟
+        kind: sui
+        hp: 140
+        speed: 35
+        path: [column, pillar]
+        onArrive: probe
+  - at: 320
+    actors:
+      - id: probe-3
+        label: 试探祟
+        kind: sui
+        hp: 160
+        speed: 35
+        path: [column, pillar]
+        onArrive: probe
 intro:
   image: res://assets/stills/level-09.png
   lines:

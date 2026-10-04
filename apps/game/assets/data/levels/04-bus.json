@@ -87,8 +87,8 @@
   ],
   "spirit": {
     "id": "evil-1",
-    "maxHp": 26,
-    "moveDurationSec": 4,
+    "maxHp": 160,
+    "moveDurationSec": 12,
     "entryHotspotId": "door"
   },
   "meters": [
@@ -113,14 +113,14 @@
   ],
   "waves": [
     {
-      "at": 0.3,
+      "at": 3,
       "actors": [
         {
           "id": "good-1",
           "label": "善鬼",
           "kind": "good",
           "hp": 20,
-          "speed": 240,
+          "speed": 68,
           "path": [
             "door",
             "aisle",
@@ -134,14 +134,14 @@
       ]
     },
     {
-      "at": 0.7,
+      "at": 5,
       "actors": [
         {
           "id": "evil-1",
           "label": "邪祟",
           "kind": "evil",
-          "hp": 26,
-          "speed": 220,
+          "hp": 160,
+          "speed": 58,
           "path": [
             "door",
             "aisle",
@@ -152,14 +152,14 @@
       ]
     },
     {
-      "at": 1.2,
+      "at": 60,
       "actors": [
         {
           "id": "good-2",
           "label": "善鬼",
           "kind": "good",
           "hp": 20,
-          "speed": 240,
+          "speed": 68,
           "path": [
             "door",
             "aisle",
@@ -173,32 +173,14 @@
       ]
     },
     {
-      "at": 1.6,
-      "actors": [
-        {
-          "id": "evil-2",
-          "label": "邪祟",
-          "kind": "evil",
-          "hp": 26,
-          "speed": 220,
-          "path": [
-            "door",
-            "aisle",
-            "seat"
-          ],
-          "onArrive": "fear"
-        }
-      ]
-    },
-    {
-      "at": 2.1,
+      "at": 178,
       "actors": [
         {
           "id": "good-3",
           "label": "善鬼",
           "kind": "good",
           "hp": 20,
-          "speed": 230,
+          "speed": 68,
           "path": [
             "door",
             "aisle",
@@ -208,6 +190,19 @@
           "onArrive": "clog",
           "redirectable": true,
           "damageable": false
+        },
+        {
+          "id": "evil-2",
+          "label": "邪祟",
+          "kind": "evil",
+          "hp": 180,
+          "speed": 58,
+          "path": [
+            "door",
+            "aisle",
+            "seat"
+          ],
+          "onArrive": "fear"
         }
       ]
     }

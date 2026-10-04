@@ -164,6 +164,8 @@ func _finish(actor: SpiritActor) -> void:
 			_meter("offering", 1)
 		"yang":
 			_meter("yang", -1)
+		"tide", "probe":
+			_meter(actor.on_arrive, 1)
 		"form":
 			form += actor.payload
 			status_text = "成型条 %.0f。" % form
