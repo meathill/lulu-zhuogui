@@ -1,0 +1,37 @@
+; 《路路捉鬼》Godot 4.3 工程。渲染走 gl_compatibility。
+config_version=5
+
+[application]
+
+config/name="路路捉鬼"
+config/description="临江市民俗事务服务中心调度系统"
+run/main_scene="res://scenes/levels/level_01.tscn"
+config/features=PackedStringArray("4.3", "GL Compatibility")
+config/icon="res://icon.svg"
+run/max_fps=60
+
+[autoload]
+
+GameManager="*res://src/autoload/game_manager.gd"
+InputManager="*res://src/autoload/input_manager.gd"
+SaveManager="*res://src/autoload/save_manager.gd"
+AudioManager="*res://src/autoload/audio_manager.gd"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[debug]
+
+gdscript/warnings/untyped_declaration=1
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
