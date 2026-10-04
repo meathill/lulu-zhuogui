@@ -39,6 +39,7 @@
    - `07_finale.md`：第 21–25 关（终章决战）
 8. [design/06_endings.md](design/06_endings.md) — 分支旗标与多结局判定
 9. [design/07_open_questions.md](design/07_open_questions.md) — 待讨论事项与已关闭决策
+10. [tech_spec.md](tech_spec.md) — 技术架构规格书（Godot 4 + Monorepo + 多平台发布）
 
 对照旧整稿：`script_v2.md`（保留，已被 `design/` 拆分版全面迭代取代）。
 
