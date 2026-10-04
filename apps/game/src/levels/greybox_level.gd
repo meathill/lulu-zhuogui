@@ -36,7 +36,29 @@ func _unhandled_input(event: InputEvent) -> void:
 	var mouse := event as InputEventMouseButton
 	if not mouse.pressed or mouse.button_index != MOUSE_BUTTON_LEFT:
 		return
+	if _pick_cabin(mouse.position):
+		return
 	_click(get_global_mouse_position())
+
+
+func _pick_cabin(screen_pos: Vector2) -> bool:
+	var view := get_node_or_null("ElevatorView")
+	if view == null:
+		return false
+	var slot_id := str(view.call("pick", screen_pos))
+	if slot_id == "":
+		return true
+	var slot: HotspotSlot = slots.get(slot_id)
+	if slot == null:
+		return true
+	if slot.role == "backpack":
+		click_backpack()
+		return true
+	if coach != null and bool(coach.call("intercept_slot", slot.slot_id)):
+		_refresh()
+		return true
+	_use(slot)
+	return true
 
 
 func try_place(tool_id: String, slot_id: String) -> void:

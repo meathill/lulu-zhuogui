@@ -3,6 +3,12 @@ extends "res://src/levels/greybox_state.gd"
 ## 摆场、出波、沿符位走位。
 
 func _build_room(data: Dictionary) -> void:
+	if level_id == "level-01":
+		var view: Node = load("res://src/levels/elevator_cabin.gd").new()
+		view.name = "ElevatorView"
+		add_child(view)
+		view.call("setup")
+		return
 	var bg := ColorRect.new()
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bg.offset_right = 1920
@@ -36,6 +42,20 @@ func _build_slots(data: Dictionary) -> void:
 		if camera_mode == "multi" and slot.camera_id != current_camera:
 			slot.visible = false
 		slots[slot.slot_id] = slot
+	if level_id == "level-01":
+		_hide_flat_slots()
+
+
+func _hide_flat_slots() -> void:
+	for item in slots.values():
+		var slot := item as HotspotSlot
+		if slot.plate != null:
+			slot.plate.visible = false
+		if slot.caption != null:
+			slot.caption.visible = false
+	var view := get_node_or_null("ElevatorView")
+	if view != null:
+		view.call("bind")
 
 
 func _build_waves(data: Dictionary) -> void:

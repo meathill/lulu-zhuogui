@@ -104,6 +104,7 @@
 - 使用 pnpm
 - 使用 vite 构建 typescript
 - 使用 vitest 编写测试
+- 游戏画面是固定机位三维：Godot Node3D / Camera3D，渲染后端 gl_compatibility。界面与教程用 Control。
 
 ## 安全
 

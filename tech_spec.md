@@ -5,7 +5,7 @@
 > **面向平台**：  
 > - **第一阶段（桌面端）**：macOS (Apple Silicon & Intel) + Windows (x64) + SteamOS / Linux (Steam Deck Verified)  
 > - **第二阶段（移动端）**：iOS + Android  
-> **核心引擎**：Godot 4.3+ (2D / Compatibility 模式)  
+> **核心引擎**：Godot 4.3+（固定机位 3D / gl_compatibility）  
 > **仓库形态**：pnpm + Turborepo 驱动的多包架构 (Monorepo)
 
 ---
@@ -15,7 +15,7 @@
 1. **跨平台零重构**：从第一天起统一视口缩放、输入抽象与渲染后端，确保桌面端（鼠标/手柄）到移动端（触屏）的代码复用率达到 95% 以上。
 2. **轻量与高能效**：游戏底层运行于 `gl_compatibility` (OpenGL ES 3.0)，在 Steam Deck 掌机与低端移动设备上兼顾低功耗、低发热与稳定 60 FPS。
 3. **数据与逻辑分离（Data-Driven）**：关卡波次、台词剧本、符箓数值、鬼祟属性采用可读可版本化的配置格式，方便持续迭代与自动化校验。
-4. **做减法的生产力管线**：围绕“固定机位监控”、“少人形动作”、“鬼影粒子”、“CRT 扫描线/噪点”等核心风格，最大化利用 Godot 原生 2D 节点与 CanvasItem 着色器。
+4. **做减法的生产力管线**：围绕“固定机位监控”、“少人形动作”、“鬼影”、“CRT 扫描线/噪点”等核心风格，画面用固定机位 Node3D（gl_compatibility），界面用 Control。
 
 ---
 
@@ -84,7 +84,7 @@ lulu-zhuogui/
 - **Godot 版本**：`Godot 4.3-stable` 或更新版
 - **渲染后端**：`gl_compatibility` (OpenGL ES 3.0 / WebGL)
   - **核心考量**：
-    - 纯 2D 监控视角，无需 Vulkan 重型 3D 光影计算；
+    - 固定机位三维监控，不用 Forward+ / Vulkan 重型光影；
     - Steam Deck 上通过 Linux 原生运行时获得极低瓦数能耗；
     - 对未来 iOS (Metal via GLES3) 和 Android (各种千元机与老旧 GPU) 达到 99%+ 覆盖率；
     - 着色器（CRT 扫描线、监控色差、噪点、符光）表现全平台统一。
@@ -196,7 +196,7 @@ graph TD
   - 性能保障：单 Pass 片元着色器完成，禁止多重 Framebuffer 拷贝。
 - **鬼祟渲染风格**：
   - 严格落实**“少人原则”**：
-  - 阴煞祟团采用 2D 粒子系统 (`CPUParticles2D`，对移动端/兼容模式更友好) + 动态黑烟 Shader；
+  - 阴煞祟团是固定机位里的暗色三维团块，沿门缝贴地滑进来；兼容模式不走 Forward+ 光影；
   - 偶尔出现的活人只提供远景静态剪影或简易步行 SpriteFrames，无骨骼动画消耗。
 
 ---
@@ -285,7 +285,7 @@ graph TD
 
 | 阶段 | 周期目标 | 核心交付物 |
 | :--- | :--- | :--- |
-| **M1: 极简原型 (Greybox Prototype)** | 2 周 | 完成第 1 关电梯场景：单机位 45° 俯视、门下缝贴符、符力自回、鬼影进门、老周劝退结算。验证 Godot 2D 与手感。 |
+| **M1: 极简原型 (Greybox Prototype)** | 2 周 | 完成第 1 关电梯场景：单机位 45° 俯视、门下缝贴符、符力自回、鬼影进门、老周劝退结算。验证固定机位三维（gl_compatibility）与手感。 |
 | **M2: 机制与输入闭环 (Vertical Slice)** | 4 周 | 完成 1~5 关（包含第 4 关驱离符改道、第 5 关定神+阴差拘魂、手操引雷）；支持鼠标、键盘、Steam Deck 手柄无缝操作。 |
 | **M3: Steam 试玩版 (Steam Demo / Early Access)** | 6 周 | 接入 GodotSteam（成就、云存档）；适配 1280×800 掌机比例；通过 macOS 签名公证；上线 Steam 愿望单/Demo。 |
 | **M4: 完整主线 (Full Release)** | 8 周 | 序章 + 25 关逐关内容交付；布丁誓约叙事弧闭环；完整音效与方言配音集成；多结局分支判定系统。 |
@@ -297,5 +297,5 @@ graph TD
 
 本架构方案完全满足：
 1. **统一性**：Monorepo 集中管理游戏、工具与数据；
-2. **轻量性**：Godot 4 兼容模式为 2D 监控叙事塔防量身定制；
+2. **轻量性**：Godot 4 兼容模式为固定机位三维监控叙事塔防量身定制；
 3. **跨平台性**：一步到位直达 macOS + Windows + Steam Deck，同时无缝铺平未来通往 iOS 与 Android 的迁移之路。
