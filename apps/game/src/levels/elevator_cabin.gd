@@ -10,6 +10,9 @@ var _papers: Dictionary = {}
 var _blobs: Dictionary = {}
 var _hits: Dictionary = {}
 var _shot: bool = false
+var _grade: ColorRect
+var _seam_mesh: Dictionary = {}
+var _seam_color: Dictionary = {}
 
 
 func setup() -> void:
@@ -46,9 +49,8 @@ func _add_grade() -> void:
 	var rect := ColorRect.new()
 	rect.name = "CabinGrade"
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	rect.offset_right = 1920
-	rect.offset_bottom = 1080
 	rect.color = Color(1, 1, 1, 0)
+	_grade = rect
 	var shader := Shader.new()
 	shader.code = """shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, repeat_disable, filter_nearest;
@@ -72,13 +74,18 @@ func bind() -> void:
 	_shot = OS.get_cmdline_user_args().has("--shot-cabin")
 	if _shot:
 		_capture_sequence()
+	var phone := _arg_value("--shot-phone")
+	if phone != "":
+		_capture_phone(phone)
 
 
 func _process(_delta: float) -> void:
+	_fit_grade()
 	if not _bound or _camera == null:
 		return
 	_sync_slots()
 	_sync_spirits()
+	_pulse_seams()
 
 
 func pick(screen_pos: Vector2) -> String:
@@ -170,19 +177,26 @@ func _build_fixtures() -> void:
 
 func _build_slots() -> void:
 	# 门下缝：门底整条黑槽，略探进轿厢，监控能看见。
-	var bottom := _box(Vector3(0, 0.09, -1.22), Vector3(1.16, 0.16, 0.20), Color(0.01, 0.012, 0.014))
+	var bottom_c := Color(0.01, 0.012, 0.014)
+	var bottom := _box(Vector3(0, 0.09, -1.22), Vector3(1.16, 0.16, 0.20), bottom_c)
 	bottom.name = "DoorBottomSeam"
-	_hits["door-bottom-seam"] = AABB(Vector3(-0.62, 0.0, -1.40), Vector3(1.24, 0.22, 0.48))
+	_remember_seam("door-bottom-seam", bottom, bottom_c)
+	# 点击体积比看见的缝宽一圈，指尖能点中。外观不改。
+	_hits["door-bottom-seam"] = AABB(Vector3(-0.85, -0.08, -1.55), Vector3(1.70, 0.58, 0.95))
 	_papers["door-bottom-seam"] = _paper(Vector3(0, 0.035, -1.02), Vector3(-90, 0, 0), Vector2(0.42, 0.18))
 	# 两扇门中间的门缝。
-	var crack := _box(Vector3(0, 1.12, -1.16), Vector3(0.10, 1.78, 0.10), Color(0.01, 0.01, 0.012))
+	var crack_c := Color(0.01, 0.01, 0.012)
+	var crack := _box(Vector3(0, 1.12, -1.16), Vector3(0.10, 1.78, 0.10), crack_c)
 	crack.name = "DoorCrack"
-	_hits["door-seam"] = AABB(Vector3(-0.09, 0.24, -1.36), Vector3(0.18, 1.78, 0.36))
+	_remember_seam("door-seam", crack, crack_c)
+	_hits["door-seam"] = AABB(Vector3(-0.32, 0.18, -1.48), Vector3(0.64, 1.90, 0.55))
 	_papers["door-seam"] = _paper(Vector3(0, 0.95, -1.12), Vector3(0, 0, 0), Vector2(0.16, 0.36))
 	# 楼层板中间那条横缝。
-	var panel := _box(Vector3(1.03, 1.50, -0.48), Vector3(0.03, 0.045, 0.32), Color(0.01, 0.01, 0.012))
+	var panel_c := Color(0.01, 0.01, 0.012)
+	var panel := _box(Vector3(1.03, 1.50, -0.48), Vector3(0.03, 0.045, 0.32), panel_c)
 	panel.name = "FloorPanelSeam"
-	_hits["floor-panel"] = AABB(Vector3(0.90, 1.32, -0.68), Vector3(0.22, 0.36, 0.40))
+	_remember_seam("floor-panel", panel, panel_c)
+	_hits["floor-panel"] = AABB(Vector3(0.78, 1.18, -0.85), Vector3(0.40, 0.62, 0.74))
 	_papers["floor-panel"] = _paper(Vector3(1.02, 1.42, -0.48), Vector3(0, -90, 8), Vector2(0.20, 0.14))
 
 
@@ -343,6 +357,61 @@ func _mark_tex() -> ImageTexture:
 			img.set_pixel(x, y, Color(0.15, 0.08, 0.04, 1))
 			img.set_pixel(24 - i, 30 - int(i * 0.4), Color(0.15, 0.08, 0.04, 1))
 	return ImageTexture.create_from_image(img)
+
+
+func _remember_seam(slot_id: String, mesh: MeshInstance3D, color: Color) -> void:
+	_seam_mesh[slot_id] = mesh
+	_seam_color[slot_id] = color
+
+
+func _fit_grade() -> void:
+	if _grade == null:
+		return
+	var vis := get_viewport().get_visible_rect().size
+	if vis.x < 2.0 or vis.y < 2.0:
+		return
+	_grade.position = Vector2.ZERO
+	_grade.size = vis
+
+
+func _pulse_seams() -> void:
+	var slots: Variant = get_parent().get("slots")
+	var wave := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 180.0)
+	for slot_id in _seam_mesh.keys():
+		var mesh := _seam_mesh[slot_id] as MeshInstance3D
+		var mat := mesh.material_override as StandardMaterial3D
+		if mat == null:
+			continue
+		var base: Color = _seam_color[slot_id]
+		var hot := false
+		if slots is Dictionary:
+			var slot: Variant = (slots as Dictionary).get(slot_id)
+			if slot != null and bool(slot.coached):
+				hot = true
+		if hot:
+			mat.albedo_color = base.lerp(Color(0.92, 0.72, 0.25), 0.16 + 0.28 * wave)
+		else:
+			mat.albedo_color = base
+
+
+func _arg_value(name: String) -> String:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with(name + "="):
+			return arg.trim_prefix(name + "=")
+	return ""
+
+
+func _capture_phone(path: String) -> void:
+	for _i in 40:
+		await get_tree().process_frame
+		var hud: Variant = get_parent().get("hud")
+		if hud != null:
+			break
+	for _i in 12:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save_shot(path)
+	get_tree().quit(0)
 
 
 func _capture_sequence() -> void:
