@@ -1,0 +1,5 @@
+{
+  "name": "@lulu/gamedata",
+  "private": true,
+  "description": "关卡、台词与数值的源数据"
+}

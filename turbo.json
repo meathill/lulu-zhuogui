@@ -1,0 +1,15 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "export-data": {
+      "cache": false,
+      "outputs": ["../../apps/game/assets/data/**"]
+    },
+    "validate": {
+      "cache": false
+    },
+    "test": {
+      "cache": false
+    }
+  }
+}

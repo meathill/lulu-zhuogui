@@ -1,0 +1,17 @@
+{
+  "name": "@lulu/tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "export-data": "node export-data.ts",
+    "validate": "node validate-data.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@lulu/shared-types": "workspace:*",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}

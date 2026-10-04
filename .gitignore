@@ -1,0 +1,19 @@
+# Node / pnpm / turbo
+node_modules/
+.pnpm-store/
+.turbo/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Godot
+.godot/
+*.translation
+export.cfg
+*.tmp
+
+# 本地引擎二进制，不入库
+tools/godot/
+
+# OS
+.DS_Store
