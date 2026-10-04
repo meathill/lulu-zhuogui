@@ -16,6 +16,7 @@ var redirect_path: PackedStringArray = PackedStringArray()
 var redirect_arrive: String = ""
 var lightning_hits: PackedStringArray = PackedStringArray()
 var talisman: String = ""
+var coached: bool = false
 var plate: ColorRect
 var caption: Label
 
@@ -56,6 +57,11 @@ func set_talisman(kind: String) -> void:
 func clear_talisman() -> void:
 	talisman = ""
 	refresh()
+
+
+func set_coached(on: bool) -> void:
+	coached = on
+	modulate = Color(1.25, 1.08, 0.45) if on else Color(1, 1, 1)
 
 
 func refresh() -> void:

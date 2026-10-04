@@ -21,6 +21,8 @@ var spawned_count: int = 0
 var time_sec: float = 0.0
 var lightning_ready: float = 0.0
 var kicked: bool = false
+var kick_removed: bool = false
+var coach: RefCounted = null
 var current_tool: String = "ward"
 var current_camera: String = "A"
 var win_kind: String = "clear"
@@ -72,11 +74,13 @@ func _ready() -> void:
 	if auto_mode == "win":
 		policy = POLICY.new()
 		policy.set("level", self)
+	coach = TutorialCoach.attach(self, data)
 	var intro := _lines(data.get("intro", {}))
-	if auto_mode == "" and intro.size() > 0:
+	# 有逐步带教时不播开场字幕，台词跟着手上的动作走。
+	if auto_mode == "" and intro.size() > 0 and coach == null:
 		paused = true
 		cutscene.play(_image(data.get("intro", {})), intro)
-	else:
+	elif coach == null:
 		status_text = "点符位下符。符力自己会回。"
 	_refresh()
 	print("灰盒开局：%s" % level_id)
@@ -134,6 +138,8 @@ func _auto_arg() -> String:
 		return "fail"
 	if args.has("--auto-ward"):
 		return "ward"
+	if args.has("--auto-coach"):
+		return "coach"
 	return ""
 
 
@@ -251,6 +257,10 @@ func _fail(reason: String) -> void:
 			print("RESULT hold")
 			_quit(0)
 		return
+	if auto_mode == "coach":
+		print("COACH fail")
+		_quit(1)
+		return
 	if hud != null:
 		hud.set_zhou(zhou)
 		hud.show_end(reason + "\n" + zhou)
@@ -273,6 +283,10 @@ func _win(text: String) -> void:
 		return
 	if auto_mode == "ward":
 		print("RESULT hold")
+		_quit(0)
+		return
+	if auto_mode == "coach":
+		print("COACH done")
 		_quit(0)
 		return
 	if outro_lines.size() > 0 and cutscene != null:
@@ -329,6 +343,9 @@ func _slot(slot_id: String) -> HotspotSlot:
 func _refresh() -> void:
 	if hud == null:
 		return
+	if coach != null:
+		hud.set_coach(str(coach.get("line")))
+		coach.call("apply_hints")
 	var ward := "符力 %.0f / %.0f  当前：%s" % [energy.value, energy.max_value, _tool_name(current_tool)]
 	if win_kind == "form-send":
 		ward += "  成型 %.0f" % form

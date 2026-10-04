@@ -88,4 +88,35 @@ describe("关卡校验", () => {
     }
     expect(level10.winKind).toBe("boss")
   })
+
+  it("第1关教学台词按拍子写，口播里不写「没有」", () => {
+    const raw = parse(readFileSync(resolve(here, "../gamedata/levels/01-elevator.yaml"), "utf8")) as {
+      kickAt: number
+      waves: { at: number }[]
+      tutorial: Record<string, unknown>
+      outro: { lines: string[] }
+    }
+    expect(raw.waves.map((wave) => wave.at)).toEqual([16, 64, 180])
+    expect(raw.kickAt).toBe(36)
+    const keys = ["look", "place", "regen", "blocked", "kicked", "second", "tear", "wave"]
+    for (const key of keys) {
+      expect(raw.tutorial[key], key).toBeTruthy()
+    }
+    const spoken: string[] = []
+    const walk = (value: unknown) => {
+      if (typeof value === "string") {
+        spoken.push(value)
+      } else if (Array.isArray(value)) {
+        value.forEach(walk)
+      } else if (typeof value === "object" && value !== null) {
+        Object.values(value).forEach(walk)
+      }
+    }
+    walk(raw.tutorial)
+    expect(spoken.length).toBeGreaterThan(8)
+    for (const line of spoken) {
+      expect(line).not.toContain("没有")
+    }
+    expect(raw.outro.lines[0]).toContain("交班")
+  })
 })

@@ -2,6 +2,34 @@ extends "res://src/levels/greybox_stage.gd"
 
 ## 贴符、五雷、撕符、召唤阴差。
 
+func _tick(delta: float) -> void:
+	# 教学停表只冻威胁时钟。符力照样回，方便看条。
+	if coach != null and bool(coach.call("holding")):
+		energy.tick(delta)
+		coach.call("pulse", delta)
+		if auto_mode == "coach":
+			coach.call("drive", delta)
+		return
+	super._tick(delta)
+	if coach != null and ended == "":
+		coach.call("pulse", delta)
+		if auto_mode == "coach":
+			coach.call("drive", delta)
+
+
+func tutorial_paint(hot_ids: PackedStringArray, tool_id: String, energy_on: bool) -> void:
+	for slot_id in slots.keys():
+		var slot := slots[slot_id] as HotspotSlot
+		if slot == null:
+			continue
+		slot.set_coached(hot_ids.has(str(slot_id)))
+	if hud == null:
+		return
+	hud.highlight_tool("ward", tool_id == "ward")
+	hud.highlight_tool("tear", tool_id == "tear")
+	hud.highlight_energy(energy_on)
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if paused or ended != "" or not event is InputEventMouseButton:
 		return
@@ -116,6 +144,9 @@ func _click(world: Vector2) -> void:
 	if best.role == "backpack":
 		click_backpack()
 		return
+	if coach != null and bool(coach.call("intercept_slot", best.slot_id)):
+		_refresh()
+		return
 	_use(best)
 
 
@@ -156,6 +187,8 @@ func _stick(slot: HotspotSlot, tool_id: String) -> void:
 			status_text = "定神贴上了。按住之后才能召唤阴差。"
 		_:
 			status_text = "镇守贴上了。经过的祟会被挡住。"
+	if coach != null:
+		coach.call("on_stuck", slot.slot_id, tool_id)
 
 
 func _cast_reveal(slot: HotspotSlot) -> void:
@@ -230,6 +263,8 @@ func _tear(slot: HotspotSlot) -> void:
 			if actor.blocked_by == slot.slot_id:
 				actor.blocked_by = ""
 		status_text = "符撕掉了，位子空出来。"
+		if coach != null:
+			coach.call("on_tore", slot.slot_id)
 		return
 	status_text = "撕开了，魂和祟分开了。" if separated else "这儿没有可撕的符。"
 

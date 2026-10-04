@@ -53,7 +53,11 @@ func _build_hud(data: Dictionary) -> void:
 	hud = HudBar.new()
 	add_child(hud)
 	hud.build(str(data.get("title", "")), str(data.get("goal", "")), _strings(data.get("tools", [])), camera_mode == "multi")
-	hud.tool_selected.connect(func(tool_id: String) -> void: current_tool = tool_id)
+	hud.tool_selected.connect(func(tool_id: String) -> void:
+		current_tool = tool_id
+		_coach_call("on_tool", [tool_id])
+	)
+	hud.energy_pressed.connect(func() -> void: _coach_call("on_energy", []))
 	hud.summon_pressed.connect(func() -> void: call("try_summon"))
 	hud.tame_pressed.connect(func() -> void: call("try_tame"))
 	hud.disperse_pressed.connect(func() -> void: call("try_disperse"))
@@ -98,6 +102,7 @@ func _spawn(spec: Dictionary) -> void:
 	spawned_count += 1
 	actors.append(actor)
 	actor.refresh()
+	_coach_call("on_spawned", [actor.actor_id])
 
 
 func _move(delta: float) -> void:
@@ -141,6 +146,7 @@ func _try_block(actor: SpiritActor, slot: HotspotSlot) -> bool:
 	if actor.attached and actor.kind == "sui":
 		return false
 	actor.blocked_by = slot.slot_id
+	_coach_call("on_blocked", [slot.slot_id])
 	return true
 
 
@@ -223,14 +229,40 @@ func _kick() -> void:
 	if kicked or kick_slot == "" or time_sec < kick_at:
 		return
 	kicked = true
+	kick_removed = false
 	var slot := _slot(kick_slot)
 	if slot == null or slot.talisman != "ward":
+		_coach_call("on_kick", [false])
 		return
+	kick_removed = true
 	slot.clear_talisman()
 	for actor in actors:
 		if actor.blocked_by == kick_slot:
 			actor.blocked_by = ""
 	status_text = "乘客把门下缝的符踢掉了，补贴一张。"
+	_coach_call("on_kick", [true])
+
+
+func retarget_entry(actor_id: String, slot_id: String) -> void:
+	# 教学关第二条路贴在门缝或楼层板缝，细祟改从玩家堵住的那条进来。
+	for wave in waves:
+		if bool(wave.get("done", false)):
+			continue
+		var specs: Variant = wave.get("actors", [])
+		if not specs is Array:
+			continue
+		for spec in specs:
+			if not spec is Dictionary or str((spec as Dictionary).get("id", "")) != actor_id:
+				continue
+			var route: Variant = (spec as Dictionary).get("path", [])
+			if route is Array and route.size() > 0:
+				route[0] = slot_id
+
+
+func _coach_call(method: String, args: Array) -> void:
+	if coach == null:
+		return
+	coach.callv(method, args)
 
 
 func _assist(delta: float) -> void:

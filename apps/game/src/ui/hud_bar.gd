@@ -11,6 +11,7 @@ signal camera_pressed(camera_id: String)
 signal dialogue_pressed
 signal restart_pressed
 signal menu_pressed
+signal energy_pressed
 
 var _energy: Label
 var _meters: Label
@@ -20,6 +21,8 @@ var _zhou: Label
 var _dialogue: Label
 var _end: Label
 var _end_box: Control
+var _energy_hit: Button
+var _tool_buttons: Dictionary = {}
 
 
 func build(title: String, goal: String, tools: PackedStringArray, multi_camera: bool) -> void:
@@ -36,6 +39,13 @@ func build(title: String, goal: String, tools: PackedStringArray, multi_camera: 
 	_label(top, goal, 16, 44, 22)
 	_meters = _label(top, "", 16, 78, 20)
 	_energy = _label(top, "", 16, 108, 20)
+	_energy_hit = Button.new()
+	_energy_hit.flat = true
+	_energy_hit.position = Vector2(16, 100)
+	_energy_hit.size = Vector2(720, 40)
+	_energy_hit.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_energy_hit.pressed.connect(func() -> void: energy_pressed.emit())
+	top.add_child(_energy_hit)
 	_status = _label(top, "", 16, 136, 20)
 	_zhou = _label(top, "", 980, 108, 20)
 	_zhou.size = Vector2(900, 52)
@@ -55,6 +65,7 @@ func build(title: String, goal: String, tools: PackedStringArray, multi_camera: 
 			var captured := tool_id
 			var button := _button(bottom, _tool_name(captured), x, 24)
 			button.pressed.connect(func() -> void: tool_selected.emit(captured))
+			_tool_buttons[captured] = button
 		x += 150.0
 	if multi_camera:
 		var cam_a := _button(bottom, "机位A", x, 24)
@@ -62,8 +73,9 @@ func build(title: String, goal: String, tools: PackedStringArray, multi_camera: 
 		x += 150.0
 		var cam_b := _button(bottom, "机位B", x, 24)
 		cam_b.pressed.connect(func() -> void: camera_pressed.emit("B"))
-	_dialogue = _label(bottom, "", 16, 100, 22)
-	_dialogue.size = Vector2(1200, 36)
+	_dialogue = _label(bottom, "", 16, 88, 22)
+	_dialogue.size = Vector2(1200, 80)
+	_dialogue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var talk := _button(bottom, "下一句", 1240, 92)
 	talk.pressed.connect(func() -> void: dialogue_pressed.emit())
 	_end_box = _panel(root, 460, 360, 1000, 280)
@@ -99,6 +111,23 @@ func set_zhou(text: String) -> void:
 
 func set_dialogue(text: String) -> void:
 	_dialogue.text = text
+
+
+func set_coach(text: String) -> void:
+	_dialogue.text = text
+
+
+func highlight_tool(tool_id: String, on: bool) -> void:
+	var button := _tool_buttons.get(tool_id) as Button
+	if button == null:
+		return
+	button.modulate = Color(1, 0.82, 0.35) if on else Color(1, 1, 1)
+
+
+func highlight_energy(on: bool) -> void:
+	_energy.modulate = Color(1, 0.9, 0.4) if on else Color(1, 1, 1)
+	if _energy_hit != null:
+		_energy_hit.mouse_filter = Control.MOUSE_FILTER_STOP if on else Control.MOUSE_FILTER_IGNORE
 
 
 func show_end(text: String) -> void:
