@@ -46,3 +46,17 @@
 ## 许可
 
 未发布作品设定稿，仅供作者与协作开发使用。
+
+## 开发（M1 灰盒）
+
+需要 Node.js >= 24、pnpm，以及 PATH 里的 `godot`（4.3+）。引擎二进制不入库。
+
+```bash
+pnpm install
+pnpm check:data
+pnpm build:data
+pnpm dev:game
+```
+
+第 1 关从 `scenes/levels/level_01.tscn` 进。点门下缝贴符，符力自己回；鬼渣血量归零过关，发冷乘客到 3 时老周劝退。进度见 [WIP.md](WIP.md)。
+
